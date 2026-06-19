@@ -17,15 +17,57 @@ aktuella förfrågningar med dagens tidsstämpel.
 
 import json
 import os
+import smtplib
+import threading
+import time
 import urllib.request
 import urllib.parse
+from email.mime.text import MIMEText
+from email.utils import formataddr
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory, render_template_string
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 LEADS_FILE = os.path.join(BASE, "leads.json")
+PROSPECTS_FILE = os.path.join(BASE, "prospects.json")
 CONFIG_FILE = os.path.join(BASE, "config.json")
+AGENTLOG_FILE = os.path.join(BASE, "agent_log.json")
 PORT = int(os.environ.get("PORT", 8810))  # molnet (Render m.fl.) sätter PORT automatiskt
+
+# Riktiga Stockholmsföretag (publika uppgifter) – B2B-prospekt för kontorsstädning.
+# Endast verifierad publik kontaktinfo; tom = sök på webben (ingen påhittad data).
+DEFAULT_PROSPECTS = [
+    {"company": "Kontorshotell i Stockholm", "type": "Kontorshotell", "area": "Stockholm",
+     "email": "hej@kontorshotellistockholm.se", "phone": "073-250 38 00", "web": "kontorshotellistockholm.se"},
+    {"company": "Places Coworking", "type": "Kontorshotell / coworking", "area": "Östermalm & Kungsholmen",
+     "email": "hello@joinplaces.co", "phone": "076-184 98 97", "web": "joinplaces.co"},
+    {"company": "Spacent", "type": "Coworking-plattform", "area": "Stockholm",
+     "email": "hello@spacent.com", "phone": "", "web": "spacent.com"},
+    {"company": "Convendum", "type": "Premium kontorshotell", "area": "Stockholm city",
+     "email": "", "phone": "010-510 08 88", "web": "convendum.se"},
+    {"company": "Quick Office", "type": "Kontorshotell (8 platser)", "area": "Stockholm",
+     "email": "", "phone": "", "web": "quickoffice.se"},
+    {"company": "Framtand", "type": "Tandvårdsklinik", "area": "Östermalm",
+     "email": "info@framtand.se", "phone": "08-660 64 06", "web": "framtand.se"},
+    {"company": "City Dental", "type": "Tandvårdsklinik", "area": "Drottninggatan, city",
+     "email": "", "phone": "08-20 06 80", "web": "citydental.se"},
+    {"company": "Stockholm Tandläkarcenter", "type": "Tandvårdsklinik", "area": "Norrmalm",
+     "email": "", "phone": "08-10 10 80", "web": "stockholmtandlakarcenter.se"},
+    {"company": "Stockholms Advokatbyrå", "type": "Advokatbyrå", "area": "Gamla stan",
+     "email": "info@stockholmsadvokat.se", "phone": "08-650 28 50", "web": "stockholmsadvokat.se"},
+    {"company": "Olsson Lilja Advokater", "type": "Advokatbyrå", "area": "Sankt Eriksgatan",
+     "email": "info@olssonlilja.se", "phone": "08-27 71 81", "web": "olssonlilja.se"},
+    {"company": "Advokatbyrå Elisabeth Fritz", "type": "Advokatbyrå", "area": "Stockholm",
+     "email": "info@advokatfritz.com", "phone": "08-21 15 60", "web": "advokatfritz.com"},
+    {"company": "Din Advokat", "type": "Advokatbyrå", "area": "Gamla stan",
+     "email": "kontakt@dinadv.se", "phone": "08-545 10 800", "web": "dinadv.se"},
+    {"company": "Nordens Redovisning", "type": "Redovisningsbyrå", "area": "Vasastan",
+     "email": "info@nordensredovisning.se", "phone": "08-128 848 50", "web": "nordensredovisning.se"},
+    {"company": "BokFix Redovisningsbyrå", "type": "Redovisningsbyrå", "area": "Stockholm",
+     "email": "info@bokfix.se", "phone": "010-555 87 07", "web": "bokfix.se"},
+    {"company": "Eklund Ekonomi", "type": "Redovisningsbyrå", "area": "Södermalm",
+     "email": "info@eklundekonomi.se", "phone": "08-428 682 21", "web": "eklundekonomi.se"},
+]
 
 app = Flask(__name__, static_folder=None)
 
@@ -45,6 +87,16 @@ DEFAULT_CONFIG = {
     "address": "Box 4021, 169 04 Solna",
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_user": "",
+    "smtp_pass": "",
+    "agent_enabled": False,
+    "agent_daily_limit": 15,
+    "agent_interval_min": 8,
+    "agent_sent_today": 0,
+    "agent_sent_date": "",
+    "agent_last_send": 0,
     "pricing": {
         "hem_pris_tim": 495,
         "rut": 0.5,
@@ -217,6 +269,205 @@ def api_areas():
     return jsonify(STOCKHOLM_AREAS)
 
 
+# ---------- B2B-prospekt (Hitta kunder) ----------
+def load_prospects():
+    if not os.path.exists(PROSPECTS_FILE):
+        seed = []
+        for i, p in enumerate(DEFAULT_PROSPECTS, 1):
+            p = dict(p)
+            p["id"] = i
+            p["status"] = "Att kontakta"
+            seed.append(p)
+        with open(PROSPECTS_FILE, "w", encoding="utf-8") as f:
+            json.dump(seed, f, ensure_ascii=False, indent=2)
+        return seed
+    with open(PROSPECTS_FILE, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def write_prospects(rows):
+    with open(PROSPECTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=2)
+
+
+@app.route("/api/prospects")
+def api_prospects():
+    return jsonify(load_prospects())
+
+
+@app.route("/api/prospect/<int:pid>", methods=["PATCH", "DELETE"])
+def api_prospect_edit(pid):
+    rows = load_prospects()
+    if request.method == "DELETE":
+        write_prospects([r for r in rows if r.get("id") != pid])
+        return jsonify({"ok": True})
+    data = request.get_json(force=True, silent=True) or {}
+    for r in rows:
+        if r.get("id") == pid:
+            if "status" in data:
+                r["status"] = data["status"]
+            break
+    write_prospects(rows)
+    return jsonify({"ok": True})
+
+
+# ---------- AUTO-AGENT (skickar lagliga B2B-offertmejl av sig själv) ----------
+def agent_log(msg):
+    log = []
+    if os.path.exists(AGENTLOG_FILE):
+        try:
+            with open(AGENTLOG_FILE, encoding="utf-8") as f:
+                log = json.load(f)
+        except Exception:
+            log = []
+    log.insert(0, {"time": datetime.now().strftime("%Y-%m-%d %H:%M"), "msg": msg})
+    log = log[:120]
+    with open(AGENTLOG_FILE, "w", encoding="utf-8") as f:
+        json.dump(log, f, ensure_ascii=False, indent=2)
+
+
+def read_agent_log():
+    if not os.path.exists(AGENTLOG_FILE):
+        return []
+    try:
+        with open(AGENTLOG_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def build_offer_email(cfg, p):
+    company = cfg.get("company", "Städlinjen AB")
+    phone = cfg.get("phone", "")
+    email = cfg.get("email", "")
+    subject = f"Städning av {p['company']} – offert från {company}"
+    body = (
+        f"Hej!\n\n"
+        f"Jag driver {company}, en lokal städfirma i Stockholm.\n\n"
+        f"Jag såg att ni driver {p['type'].lower()} i {p['area']} och ville höra om ni har "
+        f"behov av regelbunden städning av era lokaler. Vi hjälper flera företag i området med "
+        f"kontorsstädning – samma personal varje gång, miljömärkta produkter och fasta priser "
+        f"utan bindningstid.\n\n"
+        f"Får jag skicka en kostnadsfri offert anpassad efter er yta? Det tar 2 minuter på "
+        f"telefon: {phone}.\n\n"
+        f"Vänliga hälsningar,\n{company}\n{phone}" + (f" · {email}" if email else "") + "\n\n"
+        f"---\nVill ni inte ha fler mejl från oss? Svara bara \"avregistrera\" så tar vi bort er direkt."
+    )
+    return subject, body
+
+
+def send_email(cfg, to_addr, subject, body):
+    host = cfg.get("smtp_host", "smtp.gmail.com")
+    port = int(cfg.get("smtp_port", 587))
+    user = cfg.get("smtp_user", "").strip()
+    pwd = cfg.get("smtp_pass", "").strip()
+    if not user or not pwd:
+        return False, "SMTP ej konfigurerat"
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = formataddr((cfg.get("company", "Städlinjen AB"), user))
+    msg["To"] = to_addr
+    msg["List-Unsubscribe"] = f"<mailto:{user}?subject=avregistrera>"
+    try:
+        with smtplib.SMTP(host, port, timeout=20) as s:
+            s.starttls()
+            s.login(user, pwd)
+            s.sendmail(user, [to_addr], msg.as_string())
+        return True, "ok"
+    except Exception as e:
+        return False, str(e)
+
+
+def agent_tick():
+    """Körs i bakgrunden. Skickar EN offert per varv om allt stämmer – säkert strypt."""
+    cfg = load_config()
+    if not cfg.get("agent_enabled"):
+        return
+    if not cfg.get("smtp_user") or not cfg.get("smtp_pass"):
+        return
+    today = datetime.now().strftime("%Y-%m-%d")
+    if cfg.get("agent_sent_date") != today:
+        cfg["agent_sent_date"] = today
+        cfg["agent_sent_today"] = 0
+        save_config(cfg)
+    if cfg.get("agent_sent_today", 0) >= cfg.get("agent_daily_limit", 15):
+        return
+    if time.time() - cfg.get("agent_last_send", 0) < cfg.get("agent_interval_min", 8) * 60:
+        return
+    # nästa prospekt med e-post som inte kontaktats
+    rows = load_prospects()
+    target = next((r for r in rows if r.get("email") and r.get("status") == "Att kontakta"), None)
+    if not target:
+        return
+    subject, body = build_offer_email(cfg, target)
+    ok, info = send_email(cfg, target["email"], subject, body)
+    if ok:
+        target["status"] = "Kontaktad"
+        write_prospects(rows)
+        cfg["agent_sent_today"] = cfg.get("agent_sent_today", 0) + 1
+        cfg["agent_last_send"] = time.time()
+        save_config(cfg)
+        agent_log(f"📤 Offert skickad till {target['company']} ({target['email']})")
+        c2 = load_config()
+        if c2.get("telegram_bot_token") and c2.get("telegram_chat_id"):
+            _tg_send(c2["telegram_bot_token"], c2["telegram_chat_id"],
+                     f"🤖 *Agenten skickade offert*\nTill: {target['company']}\n{target['email']}\nIdag: {cfg['agent_sent_today']}/{cfg.get('agent_daily_limit',15)}")
+    else:
+        agent_log(f"⚠️ Kunde inte skicka till {target['company']}: {info}")
+        # pausa agenten vid inloggningsfel så vi inte loopar
+        if "auth" in info.lower() or "login" in info.lower() or "password" in info.lower():
+            cfg["agent_enabled"] = False
+            save_config(cfg)
+            agent_log("⏸️ Agenten pausad – kontrollera e-post/app-lösenord.")
+
+
+def agent_loop():
+    while True:
+        try:
+            agent_tick()
+        except Exception as e:
+            agent_log(f"Fel i agent-loop: {e}")
+        time.sleep(30)
+
+
+@app.route("/api/agent", methods=["GET", "POST"])
+def api_agent():
+    cfg = load_config()
+    if request.method == "POST":
+        data = request.get_json(force=True, silent=True) or {}
+        for k in ["smtp_user", "smtp_pass", "smtp_host"]:
+            if k in data:
+                cfg[k] = (data[k] or "").strip()
+        if "smtp_port" in data:
+            cfg["smtp_port"] = int(data["smtp_port"] or 587)
+        if "agent_enabled" in data:
+            cfg["agent_enabled"] = bool(data["agent_enabled"])
+        if "agent_daily_limit" in data:
+            cfg["agent_daily_limit"] = int(data["agent_daily_limit"] or 15)
+        if "agent_interval_min" in data:
+            cfg["agent_interval_min"] = int(data["agent_interval_min"] or 8)
+        save_config(cfg)
+        if cfg.get("agent_enabled"):
+            agent_log("▶️ Agenten startad.")
+        else:
+            agent_log("⏸️ Agenten stoppad.")
+    cfg = load_config()
+    rows = load_prospects()
+    queue = len([r for r in rows if r.get("email") and r.get("status") == "Att kontakta"])
+    return jsonify({
+        "enabled": cfg.get("agent_enabled", False),
+        "configured": bool(cfg.get("smtp_user") and cfg.get("smtp_pass")),
+        "smtp_user": cfg.get("smtp_user", ""),
+        "smtp_host": cfg.get("smtp_host", "smtp.gmail.com"),
+        "smtp_port": cfg.get("smtp_port", 587),
+        "daily_limit": cfg.get("agent_daily_limit", 15),
+        "interval_min": cfg.get("agent_interval_min", 8),
+        "sent_today": cfg.get("agent_sent_today", 0),
+        "queue": queue,
+        "log": read_agent_log()[:40],
+    })
+
+
 @app.route("/dashboard")
 def dashboard():
     return render_template_string(DASHBOARD_HTML)
@@ -269,6 +520,8 @@ DASHBOARD_HTML = r"""
  .sbtn.on[data-s="Vunnen"]{background:#16a34a;color:#fff;border-color:#16a34a}
  .sbtn.on[data-s="Förlorad"]{background:#dc2626;color:#fff;border-color:#dc2626}
  .call{background:#16a34a;color:#fff;text-decoration:none;padding:8px 16px;border-radius:999px;font-weight:700;font-size:14px}
+ .mailbtn{background:#0e7490;color:#fff;text-decoration:none;padding:8px 16px;border-radius:999px;font-weight:700;font-size:14px;border:0;cursor:pointer}
+ .webbtn{background:#fff;border:1px solid #cbd5e1;color:#475569;text-decoration:none;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13px}
  .del{margin-left:auto;background:none;border:0;color:#cbd5e1;cursor:pointer;font-size:18px}
  .del:hover{color:#dc2626}
  .note{margin-top:10px;width:100%;border:1px solid #e2e8f0;border-radius:10px;padding:9px 12px;font-size:13.5px;font-family:inherit;resize:vertical}
@@ -294,6 +547,8 @@ DASHBOARD_HTML = r"""
  </div>
  <div class="tabs">
    <button class="tab active" data-p="leads">📋 Leads</button>
+   <button class="tab" data-p="prospekt">🎯 Hitta kunder</button>
+   <button class="tab" data-p="agent">🤖 Auto-agent</button>
    <button class="tab" data-p="settings">⚙️ Inställningar</button>
    <button class="tab" data-p="pricing">💰 Priser</button>
    <button class="tab" data-p="telegram">📲 Telegram</button>
@@ -309,6 +564,49 @@ DASHBOARD_HTML = r"""
        <select id="farea"><option value="">Alla områden</option></select>
      </div>
      <div id="leadList"></div>
+   </div>
+
+   <!-- HITTA KUNDER (B2B-prospekt) -->
+   <div class="page" id="p-prospekt">
+     <div class="warn">🎯 Riktiga Stockholmsföretag (kontorsstädning). B2B-mejl är lagligt om det är relevant + har avregistrering – det fixar mallen åt dig. Tryck <b>"Skriv mejl"</b> så öppnas ditt e-postprogram färdigifyllt.</div>
+     <div class="stats" id="pstats"></div>
+     <div id="prospectList"></div>
+   </div>
+
+   <!-- AUTO-AGENT -->
+   <div class="page" id="p-agent">
+     <div class="form-card" style="max-width:680px">
+       <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+         <h3 style="margin:0">🤖 Auto-agent</h3>
+         <span id="agentBadge" class="pill" style="background:#fee2e2;color:#b91c1c">AV</span>
+         <label style="margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer">
+           <input type="checkbox" id="agentToggle" onchange="toggleAgent()" style="width:20px;height:20px"> <b>På / Av</b>
+         </label>
+       </div>
+       <p class="hint">Agenten skickar dina lagliga offertmejl till företagen i "Hitta kunder" – helt själv, dygnet runt, i säker takt. Din bror sköter svaren.</p>
+
+       <div class="stats" style="margin:6px 0 16px">
+         <div class="stat ny"><b id="agQueue">0</b><span>I kö att maila</span></div>
+         <div class="stat ringd"><b id="agSent">0</b><span>Skickade idag</span></div>
+         <div class="stat vunnen"><b id="agLimit">15</b><span>Dagsgräns</span></div>
+       </div>
+
+       <div id="agentWarn" class="warn" style="display:none">⚠️ Lägg in din e-post + app-lösenord nedan så börjar agenten skicka. Utan det kan den inte logga in i din mejl.</div>
+
+       <h4 style="margin:8px 0">Din e-post (avsändare)</h4>
+       <p class="hint">Gmail rekommenderas. Skapa ett gratis <b>app-lösenord</b>: Google-konto → Säkerhet → 2-stegsverifiering → App-lösenord. Klistra in det (inte ditt vanliga lösenord).</p>
+       <div class="grid2">
+         <div class="fld"><label>E-postadress (Gmail)</label><input id="a_user" placeholder="dittnamn@gmail.com"></div>
+         <div class="fld"><label>App-lösenord</label><input id="a_pass" type="password" placeholder="16 tecken från Google"></div>
+         <div class="fld"><label>Max mejl per dag</label><input id="a_limit" type="number" value="15"></div>
+         <div class="fld"><label>Minuter mellan mejl</label><input id="a_interval" type="number" value="8"></div>
+       </div>
+       <button class="save" onclick="saveAgent(this)">Spara & aktivera</button>
+       <span class="ok-msg" id="agentOk"></span>
+
+       <h4 style="margin:22px 0 8px">Aktivitetslogg (live)</h4>
+       <div id="agentLog" class="steps" style="max-height:240px;overflow:auto"></div>
+     </div>
    </div>
 
    <!-- SETTINGS -->
@@ -371,7 +669,7 @@ DASHBOARD_HTML = r"""
  </div>
 
 <script>
-let LEADS=[];
+let LEADS=[], PROSPECTS=[], SETTINGS={company:'Städlinjen AB',phone:'',email:''};
 const $=s=>document.querySelector(s);
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -439,8 +737,105 @@ async function setStatus(id,s){await fetch('/api/lead/'+id,{method:'PATCH',heade
 async function saveNote(id,v){await fetch('/api/lead/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes:v})});}
 async function delLead(id){if(!confirm('Radera detta lead?'))return;await fetch('/api/lead/'+id,{method:'DELETE'});loadLeads();}
 
+// ---- Hitta kunder (B2B-prospekt) ----
+async function loadProspects(){
+  PROSPECTS=await (await fetch('/api/prospects')).json();
+  renderProspects();
+}
+function prospectEmail(p){
+  const company=SETTINGS.company||'Städlinjen AB';
+  const phone=SETTINGS.phone||'';const email=SETTINGS.email||'';
+  const subject=`Städning av ${p.company} – offert från ${company}`;
+  const body=`Hej!
+
+Jag driver ${company}, en lokal städfirma i Stockholm.
+
+Jag såg att ni driver ${p.type.toLowerCase()} i ${p.area} och ville höra om ni har behov av regelbunden städning av era lokaler. Vi hjälper flera företag i området med kontorsstädning – samma personal varje gång, miljömärkta produkter och fasta priser utan bindningstid.
+
+Får jag skicka en kostnadsfri offert anpassad efter er yta? Det tar 2 minuter på telefon: ${phone}.
+
+Vänliga hälsningar,
+${company}
+${phone}${email?' · '+email:''}
+
+---
+Vill ni inte ha fler mejl från oss? Svara bara "avregistrera" så tar vi bort er direkt.`;
+  return {subject,body};
+}
+function renderProspects(){
+  const c={'Att kontakta':0,'Kontaktad':0,'Svar':0,'Kund':0};
+  PROSPECTS.forEach(p=>c[p.status]=(c[p.status]||0)+1);
+  $('#pstats').innerHTML=
+   `<div class="stat"><b>${PROSPECTS.length}</b><span>Prospekt</span></div>
+    <div class="stat ny"><b>${c['Att kontakta']}</b><span>Att kontakta</span></div>
+    <div class="stat ringd"><b>${c['Kontaktad']}</b><span>Kontaktade</span></div>
+    <div class="stat vunnen"><b>${c['Kund']}</b><span>Blev kund</span></div>`;
+  $('#prospectList').innerHTML=PROSPECTS.map(p=>{
+    const tel=(p.phone||'').replace(/\s/g,'');
+    const st=s=>`<button class="sbtn ${p.status===s?'on':''}" data-s="${s==='Kund'?'Vunnen':s==='Att kontakta'?'Ny':'Ringd'}" onclick="setProspect(${p.id},'${s}')">${s}</button>`;
+    let action='';
+    if(p.email){action=`<button class="mailbtn" onclick="writeMail(${p.id})">✉️ Skriv mejl</button>`;}
+    else{action=`<a class="webbtn" href="https://${p.web}" target="_blank">🔎 Hitta e-post på ${p.web}</a>`;}
+    return `<div class="card">
+      <div class="lead-head">
+        <span class="name">${p.company}</span>
+        <span class="pill tjanst">${p.type}</span>
+        <span class="pill area">📍 ${p.area}</span>
+      </div>
+      <div class="meta">
+        ${p.email?`<span><b>E-post:</b> ${p.email}</span>`:''}
+        ${p.phone?`<span><b>Tel:</b> ${p.phone}</span>`:''}
+        <span><b>Webb:</b> ${p.web}</span>
+      </div>
+      <div class="row">
+        <div class="statusbtns">${st('Att kontakta')}${st('Kontaktad')}${st('Svar')}${st('Kund')}</div>
+        ${action}
+        ${tel?`<a class="call" href="tel:${tel}">Ring</a>`:''}
+        <button class="del" title="Ta bort" onclick="delProspect(${p.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function writeMail(id){
+  const p=PROSPECTS.find(x=>x.id===id);if(!p)return;
+  const m=prospectEmail(p);
+  window.location.href=`mailto:${p.email}?subject=${encodeURIComponent(m.subject)}&body=${encodeURIComponent(m.body)}`;
+  setProspect(id,'Kontaktad');
+}
+async function setProspect(id,s){await fetch('/api/prospect/'+id,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:s})});loadProspects();}
+async function delProspect(id){if(!confirm('Ta bort detta prospekt?'))return;await fetch('/api/prospect/'+id,{method:'DELETE'});loadProspects();}
+
+// ---- Auto-agent ----
+async function loadAgent(){
+  const a=await (await fetch('/api/agent')).json();
+  $('#agentToggle').checked=a.enabled;
+  const b=$('#agentBadge');
+  b.textContent=a.enabled?'PÅ':'AV';
+  b.style.background=a.enabled?'#dcfce7':'#fee2e2';
+  b.style.color=a.enabled?'#166534':'#b91c1c';
+  $('#agQueue').textContent=a.queue;
+  $('#agSent').textContent=a.sent_today;
+  $('#agLimit').textContent=a.daily_limit;
+  if(!a.smtp_user)$('#a_user').value=''; else if(document.activeElement!==$('#a_user'))$('#a_user').value=a.smtp_user;
+  if(document.activeElement!==$('#a_limit'))$('#a_limit').value=a.daily_limit;
+  if(document.activeElement!==$('#a_interval'))$('#a_interval').value=a.interval_min;
+  $('#agentWarn').style.display=a.configured?'none':'block';
+  $('#agentLog').innerHTML=a.log.length?a.log.map(l=>`<div><b>${l.time}</b> &nbsp;${l.msg}</div>`).join(''):'<i>Inget än. Aktivera agenten så loggas varje utskick här.</i>';
+}
+async function saveAgent(b){
+  await post('/api/agent',{smtp_user:$('#a_user').value.trim(),smtp_pass:$('#a_pass').value.trim(),
+    agent_daily_limit:+$('#a_limit').value,agent_interval_min:+$('#a_interval').value,agent_enabled:true});
+  $('#a_pass').value='';
+  $('#agentOk').textContent='✓ Sparat & aktiverat';setTimeout(()=>$('#agentOk').textContent='',2500);
+  loadAgent();
+}
+async function toggleAgent(){
+  await post('/api/agent',{agent_enabled:$('#agentToggle').checked});loadAgent();
+}
+
 async function loadSettings(){
   const c=await (await fetch('/api/settings')).json();
+  SETTINGS=c;
   s_company.value=c.company||'';s_orgnr.value=c.orgnr||'';s_phone.value=c.phone||'';
   s_email.value=c.email||'';s_address.value=c.address||'';s_service_area.value=c.service_area||'';
   s_token.value=c.telegram_bot_token||'';s_chat.value=c.telegram_chat_id||'';
@@ -457,17 +852,22 @@ async function savePricing(b){
   $('#priceOk').textContent='✓ Sparat';setTimeout(()=>$('#priceOk').textContent='',2000);
 }
 
-loadLeads();loadSettings();
+loadSettings().then(loadProspects);
+loadLeads();loadAgent();
 setInterval(loadLeads,15000); // live-uppdatering var 15:e sek
+setInterval(loadAgent,15000); // agentstatus + logg live
 </script>
 </body></html>
 """
 
 if __name__ == "__main__":
     load_config()
+    # starta auto-agenten i bakgrunden (jobbar medan du sover)
+    threading.Thread(target=agent_loop, daemon=True).start()
     print("=" * 52)
-    print("  Städlinjen AB – Kontrollcenter körs!")
+    print("  Stadlinjen AB - Kontrollcenter + Auto-agent kor!")
     print(f"   Hemsida:    http://localhost:{PORT}")
     print(f"   Dashboard:  http://localhost:{PORT}/dashboard")
+    print("   Auto-agent: aktiveras i fliken 'Auto-agent'")
     print("=" * 52)
     app.run(host="0.0.0.0", port=PORT, debug=False)

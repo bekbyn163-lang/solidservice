@@ -1,0 +1,152 @@
+[
+  {
+    "company": "Kontorshotell i Stockholm",
+    "type": "Kontorshotell",
+    "area": "Stockholm",
+    "email": "hej@kontorshotellistockholm.se",
+    "phone": "073-250 38 00",
+    "web": "kontorshotellistockholm.se",
+    "id": 1,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Places Coworking",
+    "type": "Kontorshotell / coworking",
+    "area": "Östermalm & Kungsholmen",
+    "email": "hello@joinplaces.co",
+    "phone": "076-184 98 97",
+    "web": "joinplaces.co",
+    "id": 2,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Spacent",
+    "type": "Coworking-plattform",
+    "area": "Stockholm",
+    "email": "hello@spacent.com",
+    "phone": "",
+    "web": "spacent.com",
+    "id": 3,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Convendum",
+    "type": "Premium kontorshotell",
+    "area": "Stockholm city",
+    "email": "",
+    "phone": "010-510 08 88",
+    "web": "convendum.se",
+    "id": 4,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Quick Office",
+    "type": "Kontorshotell (8 platser)",
+    "area": "Stockholm",
+    "email": "",
+    "phone": "",
+    "web": "quickoffice.se",
+    "id": 5,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Framtand",
+    "type": "Tandvårdsklinik",
+    "area": "Östermalm",
+    "email": "info@framtand.se",
+    "phone": "08-660 64 06",
+    "web": "framtand.se",
+    "id": 6,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "City Dental",
+    "type": "Tandvårdsklinik",
+    "area": "Drottninggatan, city",
+    "email": "",
+    "phone": "08-20 06 80",
+    "web": "citydental.se",
+    "id": 7,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Stockholm Tandläkarcenter",
+    "type": "Tandvårdsklinik",
+    "area": "Norrmalm",
+    "email": "",
+    "phone": "08-10 10 80",
+    "web": "stockholmtandlakarcenter.se",
+    "id": 8,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Stockholms Advokatbyrå",
+    "type": "Advokatbyrå",
+    "area": "Gamla stan",
+    "email": "info@stockholmsadvokat.se",
+    "phone": "08-650 28 50",
+    "web": "stockholmsadvokat.se",
+    "id": 9,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Olsson Lilja Advokater",
+    "type": "Advokatbyrå",
+    "area": "Sankt Eriksgatan",
+    "email": "info@olssonlilja.se",
+    "phone": "08-27 71 81",
+    "web": "olssonlilja.se",
+    "id": 10,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Advokatbyrå Elisabeth Fritz",
+    "type": "Advokatbyrå",
+    "area": "Stockholm",
+    "email": "info@advokatfritz.com",
+    "phone": "08-21 15 60",
+    "web": "advokatfritz.com",
+    "id": 11,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Din Advokat",
+    "type": "Advokatbyrå",
+    "area": "Gamla stan",
+    "email": "kontakt@dinadv.se",
+    "phone": "08-545 10 800",
+    "web": "dinadv.se",
+    "id": 12,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Nordens Redovisning",
+    "type": "Redovisningsbyrå",
+    "area": "Vasastan",
+    "email": "info@nordensredovisning.se",
+    "phone": "08-128 848 50",
+    "web": "nordensredovisning.se",
+    "id": 13,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "BokFix Redovisningsbyrå",
+    "type": "Redovisningsbyrå",
+    "area": "Stockholm",
+    "email": "info@bokfix.se",
+    "phone": "010-555 87 07",
+    "web": "bokfix.se",
+    "id": 14,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Eklund Ekonomi",
+    "type": "Redovisningsbyrå",
+    "area": "Södermalm",
+    "email": "info@eklundekonomi.se",
+    "phone": "08-428 682 21",
+    "web": "eklundekonomi.se",
+    "id": 15,
+    "status": "Att kontakta"
+  }
+]
