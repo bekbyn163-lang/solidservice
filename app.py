@@ -88,6 +88,8 @@ DEFAULT_CONFIG = {
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
     "site_url": "",
+    "meta_verify_token": "stadlinjen2026",
+    "meta_page_token": "",
     "smtp_host": "smtp.gmail.com",
     "smtp_port": 587,
     "smtp_user": "",
@@ -210,6 +212,57 @@ def api_lead():
     lead = save_lead(lead)
     sent, info = send_telegram(lead)
     return jsonify({"ok": True, "telegram": sent, "id": lead["id"]})
+
+
+# ---------- Meta (Facebook/Instagram) Lead-annonser: realtids-webhook ----------
+# Kund fyller i namn+telefon i en FB/Insta-annons -> Meta pingar denna URL i realtid
+# -> vi hämtar leadet -> sparar -> skickar till din bror på Telegram. Lagligt (opt-in).
+@app.route("/webhook/meta", methods=["GET", "POST"])
+def meta_webhook():
+    cfg = load_config()
+    if request.method == "GET":
+        # Meta verifierar webhooken en gång vid uppsättning
+        if (request.args.get("hub.mode") == "subscribe" and
+                request.args.get("hub.verify_token") == cfg.get("meta_verify_token")):
+            return request.args.get("hub.challenge", ""), 200
+        return "fel verify token", 403
+
+    data = request.get_json(force=True, silent=True) or {}
+    token = cfg.get("meta_page_token", "").strip()
+    try:
+        for entry in data.get("entry", []):
+            for ch in entry.get("changes", []):
+                if ch.get("field") != "leadgen":
+                    continue
+                leadgen_id = ch.get("value", {}).get("leadgen_id")
+                if not leadgen_id or not token:
+                    agent_log(f"📥 Meta-lead mottaget (id {leadgen_id}) men meta_page_token saknas.")
+                    continue
+                # hämta själva lead-datan från Meta
+                url = f"https://graph.facebook.com/v19.0/{leadgen_id}?access_token={token}"
+                with urllib.request.urlopen(url, timeout=12) as r:
+                    info = json.loads(r.read().decode())
+                fields = {f.get("name"): (f.get("values") or [""])[0]
+                          for f in info.get("field_data", [])}
+                lead = {
+                    "name": fields.get("full_name") or fields.get("name", ""),
+                    "phone": fields.get("phone_number") or fields.get("phone", ""),
+                    "email": fields.get("email", ""),
+                    "service": fields.get("tjanst") or fields.get("service", "Städning (Meta-annons)"),
+                    "size": fields.get("storlek", ""),
+                    "frequency": fields.get("hur_ofta", ""),
+                    "area": fields.get("city") or fields.get("område", "Stockholm"),
+                    "price": "",
+                    "message": "Kom in via Meta lead-annons (kunden sökte aktivt).",
+                    "source": "Meta-annons",
+                }
+                lead = save_lead(lead)
+                sent, _ = send_telegram(lead)
+                agent_log(f"📲 Meta-lead -> Telegram: {lead['name']} {lead['phone']} (skickat: {sent})")
+        return "ok", 200
+    except Exception as e:
+        agent_log(f"⚠️ Fel vid Meta-webhook: {e}")
+        return "ok", 200  # alltid 200 så Meta inte slutar skicka
 
 
 # ---------- Dashboard API (manage everything) ----------
@@ -449,7 +502,7 @@ def api_agent():
     cfg = load_config()
     if request.method == "POST":
         data = request.get_json(force=True, silent=True) or {}
-        for k in ["smtp_user", "smtp_pass", "smtp_host", "site_url"]:
+        for k in ["smtp_user", "smtp_pass", "smtp_host", "site_url", "meta_page_token"]:
             if k in data:
                 cfg[k] = (data[k] or "").strip()
         if "smtp_port" in data:
@@ -473,6 +526,8 @@ def api_agent():
         "configured": bool(cfg.get("smtp_user") and cfg.get("smtp_pass")),
         "smtp_user": cfg.get("smtp_user", ""),
         "site_url": cfg.get("site_url", ""),
+        "meta_page_token": cfg.get("meta_page_token", ""),
+        "meta_verify_token": cfg.get("meta_verify_token", "stadlinjen2026"),
         "smtp_host": cfg.get("smtp_host", "smtp.gmail.com"),
         "smtp_port": cfg.get("smtp_port", 587),
         "daily_limit": cfg.get("agent_daily_limit", 15),
@@ -619,6 +674,21 @@ DASHBOARD_HTML = r"""
        </div>
        <button class="save" onclick="saveAgent(this)">Spara & aktivera</button>
        <span class="ok-msg" id="agentOk"></span>
+
+       <div style="border-top:1px solid #e2e8f0;margin:24px 0 16px"></div>
+       <h4 style="margin:8px 0 4px">🌐 Meta lead-annonser (kunder som söker just nu)</h4>
+       <p class="hint">Den HÄR vägen är ban-säker: kunden fyller i namn+telefon i din FB/Insta-annons själv → leadet kommer hit i realtid → rakt till din brors Telegram. Koppla i Meta så här:</p>
+       <ol class="hint" style="margin:0 0 10px 18px">
+         <li>Skapa en <b>Lead-annons</b> i Meta Ads Manager (mål: "Leads"), geo = Stockholm.</li>
+         <li>I Meta → appens Webhooks → fält <b>leadgen</b>. Klistra in:</li>
+       </ol>
+       <div class="grid2">
+         <div class="fld"><label>Callback-URL (klistra i Meta)</label><input id="m_url" readonly value="(din hemsides-länk)/webhook/meta"></div>
+         <div class="fld"><label>Verify token (klistra i Meta)</label><input id="m_verify" readonly></div>
+         <div class="fld" style="grid-column:1/-1"><label>Page Access Token (från Meta → klistra hit)</label><input id="m_token" placeholder="Sidans access-token så vi kan hämta leadet"></div>
+       </div>
+       <button class="save" onclick="saveMeta(this)">Spara Meta-koppling</button>
+       <span class="ok-msg" id="metaOk"></span>
 
        <h4 style="margin:22px 0 8px">Aktivitetslogg (live)</h4>
        <div id="agentLog" class="steps" style="max-height:240px;overflow:auto"></div>
@@ -836,6 +906,10 @@ async function loadAgent(){
   if(document.activeElement!==$('#a_limit'))$('#a_limit').value=a.daily_limit;
   if(document.activeElement!==$('#a_interval'))$('#a_interval').value=a.interval_min;
   if(document.activeElement!==$('#a_site'))$('#a_site').value=a.site_url||'';
+  const base=(a.site_url||location.origin).replace(/\/$/,'');
+  $('#m_url').value=base+'/webhook/meta';
+  $('#m_verify').value=a.meta_verify_token||'stadlinjen2026';
+  if(document.activeElement!==$('#m_token'))$('#m_token').value=a.meta_page_token||'';
   $('#agentWarn').style.display=a.configured?'none':'block';
   $('#agentLog').innerHTML=a.log.length?a.log.map(l=>`<div><b>${l.time}</b> &nbsp;${l.msg}</div>`).join(''):'<i>Inget än. Aktivera agenten så loggas varje utskick här.</i>';
 }
@@ -849,6 +923,11 @@ async function saveAgent(b){
 }
 async function toggleAgent(){
   await post('/api/agent',{agent_enabled:$('#agentToggle').checked});loadAgent();
+}
+async function saveMeta(b){
+  await post('/api/agent',{meta_page_token:$('#m_token').value.trim()});
+  $('#metaOk').textContent='✓ Meta-koppling sparad';setTimeout(()=>$('#metaOk').textContent='',2500);
+  loadAgent();
 }
 
 async function loadSettings(){
