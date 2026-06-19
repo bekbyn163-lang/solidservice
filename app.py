@@ -87,6 +87,7 @@ DEFAULT_CONFIG = {
     "address": "Box 4021, 169 04 Solna",
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
+    "site_url": "",
     "smtp_host": "smtp.gmail.com",
     "smtp_port": 587,
     "smtp_user": "",
@@ -340,7 +341,21 @@ def build_offer_email(cfg, p):
     company = cfg.get("company", "Städlinjen AB")
     phone = cfg.get("phone", "")
     email = cfg.get("email", "")
+    site = cfg.get("site_url", "").strip()
     subject = f"Städning av {p['company']} – offert från {company}"
+    # Om sajt-länk finns: bjud in dem att ansöka själva på hemsidan (då fångas
+    # deras nummer i chatten -> bot skickar till din bror). Annars: telefon/svar.
+    if site:
+        cta = (
+            f"Vill ni ha en kostnadsfri offert? Ansök på 2 minuter här – fyll i några "
+            f"snabba frågor så återkommer vi med pris och tid:\n{site}\n\n"
+            f"Eller svara på detta mejl / ring {phone}."
+        )
+    else:
+        cta = (
+            f"Får jag skicka en kostnadsfri offert anpassad efter er yta? "
+            f"Det tar 2 minuter på telefon: {phone}."
+        )
     body = (
         f"Hej!\n\n"
         f"Jag driver {company}, en lokal städfirma i Stockholm.\n\n"
@@ -348,8 +363,7 @@ def build_offer_email(cfg, p):
         f"behov av regelbunden städning av era lokaler. Vi hjälper flera företag i området med "
         f"kontorsstädning – samma personal varje gång, miljömärkta produkter och fasta priser "
         f"utan bindningstid.\n\n"
-        f"Får jag skicka en kostnadsfri offert anpassad efter er yta? Det tar 2 minuter på "
-        f"telefon: {phone}.\n\n"
+        f"{cta}\n\n"
         f"Vänliga hälsningar,\n{company}\n{phone}" + (f" · {email}" if email else "") + "\n\n"
         f"---\nVill ni inte ha fler mejl från oss? Svara bara \"avregistrera\" så tar vi bort er direkt."
     )
@@ -435,7 +449,7 @@ def api_agent():
     cfg = load_config()
     if request.method == "POST":
         data = request.get_json(force=True, silent=True) or {}
-        for k in ["smtp_user", "smtp_pass", "smtp_host"]:
+        for k in ["smtp_user", "smtp_pass", "smtp_host", "site_url"]:
             if k in data:
                 cfg[k] = (data[k] or "").strip()
         if "smtp_port" in data:
@@ -458,6 +472,7 @@ def api_agent():
         "enabled": cfg.get("agent_enabled", False),
         "configured": bool(cfg.get("smtp_user") and cfg.get("smtp_pass")),
         "smtp_user": cfg.get("smtp_user", ""),
+        "site_url": cfg.get("site_url", ""),
         "smtp_host": cfg.get("smtp_host", "smtp.gmail.com"),
         "smtp_port": cfg.get("smtp_port", 587),
         "daily_limit": cfg.get("agent_daily_limit", 15),
@@ -600,6 +615,7 @@ DASHBOARD_HTML = r"""
          <div class="fld"><label>App-lösenord</label><input id="a_pass" type="password" placeholder="16 tecken från Google"></div>
          <div class="fld"><label>Max mejl per dag</label><input id="a_limit" type="number" value="15"></div>
          <div class="fld"><label>Minuter mellan mejl</label><input id="a_interval" type="number" value="8"></div>
+         <div class="fld" style="grid-column:1/-1"><label>Din hemsidas länk (skickas i mejlet → kunden ansöker själv)</label><input id="a_site" placeholder="https://...trycloudflare.com  eller din Render-länk"></div>
        </div>
        <button class="save" onclick="saveAgent(this)">Spara & aktivera</button>
        <span class="ok-msg" id="agentOk"></span>
@@ -819,11 +835,13 @@ async function loadAgent(){
   if(!a.smtp_user)$('#a_user').value=''; else if(document.activeElement!==$('#a_user'))$('#a_user').value=a.smtp_user;
   if(document.activeElement!==$('#a_limit'))$('#a_limit').value=a.daily_limit;
   if(document.activeElement!==$('#a_interval'))$('#a_interval').value=a.interval_min;
+  if(document.activeElement!==$('#a_site'))$('#a_site').value=a.site_url||'';
   $('#agentWarn').style.display=a.configured?'none':'block';
   $('#agentLog').innerHTML=a.log.length?a.log.map(l=>`<div><b>${l.time}</b> &nbsp;${l.msg}</div>`).join(''):'<i>Inget än. Aktivera agenten så loggas varje utskick här.</i>';
 }
 async function saveAgent(b){
   await post('/api/agent',{smtp_user:$('#a_user').value.trim(),smtp_pass:$('#a_pass').value.trim(),
+    site_url:$('#a_site').value.trim(),
     agent_daily_limit:+$('#a_limit').value,agent_interval_min:+$('#a_interval').value,agent_enabled:true});
   $('#a_pass').value='';
   $('#agentOk').textContent='✓ Sparat & aktiverat';setTimeout(()=>$('#agentOk').textContent='',2500);
