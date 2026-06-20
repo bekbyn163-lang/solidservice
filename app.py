@@ -624,11 +624,15 @@ def listen_tick():
             new_hits += 1
             agent_log(f"👂 Möjlig kund/omnämnande: {title[:80]}")
             c2 = load_config()
+            comp = c2.get("company", "Städlinjen")
+            site = c2.get("site_url", "").strip() or "(din hemsida)"
+            reply = (f"Hej! Vi på {comp} är en lokal städfirma i Stockholm och hjälper "
+                     f"gärna till. Hör av dig så fixar vi en kostnadsfri offert med RUT-avdrag: {site} 🙂")
             if c2.get("telegram_bot_token") and c2.get("telegram_chat_id"):
                 _tg_send(c2["telegram_bot_token"], c2["telegram_chat_id"],
-                         f"👂 *Lyssnar-agenten hittade något*\n{title}\n{link}\n\n"
-                         f"→ Om någon frågar efter städhjälp: svara på inlägget med er hemsida, "
-                         f"så fyller kunden i själv och numret kommer hit.")
+                         f"👂 *Möjlig kund hittad!*\n{title}\n{link}\n\n"
+                         f"📋 *Färdigt svar – kopiera & klistra in på inlägget:*\n{reply}\n\n"
+                         f"(När kunden klickar länken fyller hon i själv → numret kommer hit.)")
     if new_hits:
         _save_seen(seen)
 
