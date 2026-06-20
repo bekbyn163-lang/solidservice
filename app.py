@@ -90,6 +90,14 @@ DEFAULT_CONFIG = {
     "site_url": "",
     "meta_verify_token": "stadlinjen2026",
     "meta_page_token": "",
+    "listen_enabled": False,
+    "listen_queries": ["städfirma stockholm", "städhjälp stockholm", "flyttstäd stockholm"],
+    "listen_feeds": [],
+    "listen_interval_min": 15,
+    "listen_intent_only": True,
+    "listen_intent_words": ["söker", "sökes", "rekommend", "tips på", "tips om",
+                             "någon som kan", "behöver", "letar efter", "vet ni",
+                             "kan ni rekommendera", "hjälp med städ"],
     "smtp_host": "smtp.gmail.com",
     "smtp_port": 587,
     "smtp_user": "",
@@ -538,6 +546,138 @@ def api_agent():
     })
 
 
+# ---------- LYSSNAR-AGENT (social listening, $0, lagligt) ----------
+# Bevakar Google News RSS + ev. egna Google Alerts-flöden efter folk/inlägg
+# som rör städning i Stockholm. Ny träff -> ping till din brors Telegram.
+LISTEN_SEEN_FILE = os.path.join(BASE, "listen_seen.json")
+import xml.etree.ElementTree as ET
+
+
+def _listen_seen():
+    if os.path.exists(LISTEN_SEEN_FILE):
+        try:
+            with open(LISTEN_SEEN_FILE, encoding="utf-8") as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
+    return set()
+
+
+def _save_seen(seen):
+    with open(LISTEN_SEEN_FILE, "w", encoding="utf-8") as f:
+        json.dump(list(seen)[-500:], f)
+
+
+def _feed_urls(cfg):
+    urls = []
+    for q in cfg.get("listen_queries", []):
+        if q.strip():
+            urls.append("https://news.google.com/rss/search?q=" +
+                         urllib.parse.quote(q.strip()) + "&hl=sv&gl=SE&ceid=SE:sv")
+    urls += [u for u in cfg.get("listen_feeds", []) if u.strip()]
+    return urls
+
+
+def _parse_feed(xml_bytes):
+    items = []
+    root = ET.fromstring(xml_bytes)
+    # RSS <item>
+    for it in root.findall(".//item"):
+        items.append((it.findtext("title") or "", it.findtext("link") or ""))
+    # Atom <entry> (Google Alerts)
+    ns = "{http://www.w3.org/2005/Atom}"
+    for e in root.findall(f".//{ns}entry"):
+        title = e.findtext(f"{ns}title") or ""
+        link = ""
+        le = e.find(f"{ns}link")
+        if le is not None:
+            link = le.get("href", "")
+        items.append((title, link))
+    return items
+
+
+def listen_tick():
+    cfg = load_config()
+    if not cfg.get("listen_enabled"):
+        return
+    seen = _listen_seen()
+    new_hits = 0
+    for url in _feed_urls(cfg):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 stadlinjen"})
+            with urllib.request.urlopen(req, timeout=15) as r:
+                items = _parse_feed(r.read())
+        except Exception as e:
+            agent_log(f"👂 Kunde inte läsa flöde: {e}")
+            continue
+        for title, link in items:
+            key = link or title
+            if not key or key in seen:
+                continue
+            # intent-filter: ping bara när någon faktiskt frågar/söker (inte nyheter)
+            if cfg.get("listen_intent_only", True):
+                t = title.lower()
+                if not any(w in t for w in cfg.get("listen_intent_words", [])):
+                    seen.add(key)  # markera som sedd så vi inte kollar igen
+                    continue
+            seen.add(key)
+            new_hits += 1
+            agent_log(f"👂 Möjlig kund/omnämnande: {title[:80]}")
+            c2 = load_config()
+            if c2.get("telegram_bot_token") and c2.get("telegram_chat_id"):
+                _tg_send(c2["telegram_bot_token"], c2["telegram_chat_id"],
+                         f"👂 *Lyssnar-agenten hittade något*\n{title}\n{link}\n\n"
+                         f"→ Om någon frågar efter städhjälp: svara på inlägget med er hemsida, "
+                         f"så fyller kunden i själv och numret kommer hit.")
+    if new_hits:
+        _save_seen(seen)
+
+
+def listen_loop():
+    # första körningen "primar" dedup utan att spamma gamla träffar
+    cfg = load_config()
+    if cfg.get("listen_enabled"):
+        seen = _listen_seen()
+        for url in _feed_urls(cfg):
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 stadlinjen"})
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    for title, link in _parse_feed(r.read()):
+                        seen.add(link or title)
+            except Exception:
+                pass
+        _save_seen(seen)
+    while True:
+        try:
+            listen_tick()
+        except Exception as e:
+            agent_log(f"Fel i lyssnar-loop: {e}")
+        cfg = load_config()
+        time.sleep(max(5, cfg.get("listen_interval_min", 15)) * 60)
+
+
+@app.route("/api/listen", methods=["GET", "POST"])
+def api_listen():
+    cfg = load_config()
+    if request.method == "POST":
+        data = request.get_json(force=True, silent=True) or {}
+        if "listen_enabled" in data:
+            cfg["listen_enabled"] = bool(data["listen_enabled"])
+        if "listen_queries" in data:
+            cfg["listen_queries"] = [s.strip() for s in data["listen_queries"] if s.strip()]
+        if "listen_feeds" in data:
+            cfg["listen_feeds"] = [s.strip() for s in data["listen_feeds"] if s.strip()]
+        save_config(cfg)
+        agent_log("👂 Lyssnar-agent " + ("startad." if cfg["listen_enabled"] else "stoppad."))
+        cfg = load_config()
+    return jsonify({
+        "enabled": cfg.get("listen_enabled", False),
+        "queries": cfg.get("listen_queries", []),
+        "feeds": cfg.get("listen_feeds", []),
+        "interval_min": cfg.get("listen_interval_min", 15),
+    })
+
+
 @app.route("/dashboard")
 def dashboard():
     return render_template_string(DASHBOARD_HTML)
@@ -619,6 +759,7 @@ DASHBOARD_HTML = r"""
    <button class="tab active" data-p="leads">📋 Leads</button>
    <button class="tab" data-p="prospekt">🎯 Hitta kunder</button>
    <button class="tab" data-p="agent">🤖 Auto-agent</button>
+   <button class="tab" data-p="listen">👂 Lyssnar</button>
    <button class="tab" data-p="settings">⚙️ Inställningar</button>
    <button class="tab" data-p="pricing">💰 Priser</button>
    <button class="tab" data-p="telegram">📲 Telegram</button>
@@ -692,6 +833,33 @@ DASHBOARD_HTML = r"""
 
        <h4 style="margin:22px 0 8px">Aktivitetslogg (live)</h4>
        <div id="agentLog" class="steps" style="max-height:240px;overflow:auto"></div>
+     </div>
+   </div>
+
+   <!-- LYSSNAR-AGENT -->
+   <div class="page" id="p-listen">
+     <div class="form-card" style="max-width:680px">
+       <div style="display:flex;align-items:center;gap:14px;margin-bottom:6px">
+         <h3 style="margin:0">👂 Lyssnar-agent</h3>
+         <span id="listenBadge" class="pill" style="background:#fee2e2;color:#b91c1c">AV</span>
+         <label style="margin-left:auto;display:flex;align-items:center;gap:8px;cursor:pointer">
+           <input type="checkbox" id="listenToggle" onchange="toggleListen()" style="width:20px;height:20px"> <b>På / Av</b>
+         </label>
+       </div>
+       <p class="hint">Agenten bevakar nätet dygnet runt efter folk/inlägg som rör städning i Stockholm. Varje ny träff pingas till din brors Telegram med länken – han svarar på inlägget, kunden går till sajten och fyller i själv, och numret kommer hit. Lagligt (du svarar på något offentligt), $0.</p>
+
+       <h4 style="margin:14px 0 6px">Sökord agenten bevakar (Google News, gratis)</h4>
+       <p class="hint">Ett per rad. T.ex. "städfirma stockholm", "flyttstäd solna".</p>
+       <textarea id="l_queries" rows="4" style="width:100%" placeholder="städfirma stockholm&#10;flyttstäd solna"></textarea>
+
+       <h4 style="margin:16px 0 6px">Egna RSS-flöden (valfritt – bäst för kund-intent)</h4>
+       <p class="hint">Skapa en gratis <b>Google Alert</b> (google.com/alerts) för t.ex. "städhjälp stockholm", välj "Leverera till: RSS-flöde", klistra in länken här. Ett per rad.</p>
+       <textarea id="l_feeds" rows="3" style="width:100%" placeholder="https://www.google.com/alerts/feeds/..."></textarea>
+
+       <div style="margin-top:14px"><button class="save" onclick="saveListen(this)">Spara & aktivera</button>
+       <span class="ok-msg" id="listenOk"></span></div>
+
+       <div class="warn" style="margin-top:18px">ℹ️ Ärligt: gratis-bevakning på svenska för städ ger <b>låg volym</b>. Vill du ha hög volym automatiskt → komplettera med Meta-annons (fliken 🤖). Hög-volym-källan Facebook-grupper måste din bror ögna manuellt (FB blockerar bottar).</div>
      </div>
    </div>
 
@@ -930,6 +1098,28 @@ async function saveMeta(b){
   loadAgent();
 }
 
+// ---- Lyssnar-agent ----
+async function loadListen(){
+  const l=await (await fetch('/api/listen')).json();
+  $('#listenToggle').checked=l.enabled;
+  const b=$('#listenBadge');
+  b.textContent=l.enabled?'PÅ':'AV';
+  b.style.background=l.enabled?'#dcfce7':'#fee2e2';
+  b.style.color=l.enabled?'#166534':'#b91c1c';
+  if(document.activeElement!==$('#l_queries'))$('#l_queries').value=(l.queries||[]).join('\n');
+  if(document.activeElement!==$('#l_feeds'))$('#l_feeds').value=(l.feeds||[]).join('\n');
+}
+async function saveListen(b){
+  await post('/api/listen',{listen_enabled:true,
+    listen_queries:$('#l_queries').value.split('\n'),
+    listen_feeds:$('#l_feeds').value.split('\n')});
+  $('#listenOk').textContent='✓ Sparat & aktiverat';setTimeout(()=>$('#listenOk').textContent='',2500);
+  loadListen();
+}
+async function toggleListen(){
+  await post('/api/listen',{listen_enabled:$('#listenToggle').checked});loadListen();
+}
+
 async function loadSettings(){
   const c=await (await fetch('/api/settings')).json();
   SETTINGS=c;
@@ -950,17 +1140,19 @@ async function savePricing(b){
 }
 
 loadSettings().then(loadProspects);
-loadLeads();loadAgent();
+loadLeads();loadAgent();loadListen();
 setInterval(loadLeads,15000); // live-uppdatering var 15:e sek
 setInterval(loadAgent,15000); // agentstatus + logg live
+setInterval(loadListen,20000); // lyssnar-status live
 </script>
 </body></html>
 """
 
 if __name__ == "__main__":
     load_config()
-    # starta auto-agenten i bakgrunden (jobbar medan du sover)
+    # starta auto-agenten + lyssnar-agenten i bakgrunden (jobbar medan du sover)
     threading.Thread(target=agent_loop, daemon=True).start()
+    threading.Thread(target=listen_loop, daemon=True).start()
     print("=" * 52)
     print("  Stadlinjen AB - Kontrollcenter + Auto-agent kor!")
     print(f"   Hemsida:    http://localhost:{PORT}")
