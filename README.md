@@ -1,4 +1,4 @@
-# Städlinjen AB – Lead-motor 🧽
+# Solidsurvice – Lead-motor 🧽
 
 En komplett, gratis och **laglig** lead-maskin för städfirman.
 

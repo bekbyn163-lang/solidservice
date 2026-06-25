@@ -1,4 +1,4 @@
-# Lägga Städlinjen LIVE 🌐
+# Lägga Solidsurvice LIVE 🌐
 
 Du har **två sätt**. Börja med det snabba, gå till det permanenta när du vill.
 

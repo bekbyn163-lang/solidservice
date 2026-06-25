@@ -1,5 +1,5 @@
 """
-Städlinjen AB – Lead-motor + Kontrollcenter (inbound)
+Solidsurvice – Lead-motor + Kontrollcenter (inbound)
 -----------------------------------------------------
 Flask-app som:
   1. Serverar hemsidan (index.html + säljchatt)
@@ -81,9 +81,9 @@ STOCKHOLM_AREAS = [
 DEFAULT_CONFIG = {
     "telegram_bot_token": "",
     "telegram_chat_id": "",
-    "company": "Städlinjen AB",
+    "company": "Solidsurvice",
     "phone": "08-559 23 100",
-    "email": "info@stadlinjen.se",
+    "email": "info@solidservice.se",
     "address": "Box 4021, 169 04 Solna",
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
@@ -169,7 +169,7 @@ def send_telegram(lead):
     if not token or not chat_id:
         return False, "Telegram ej konfigurerat"
     text = (
-        "🧽 *NYTT LEAD – Städlinjen AB*\n"
+        "🧽 *NYTT LEAD – Solidsurvice*\n"
         "━━━━━━━━━━━━━━━━━━\n"
         f"👤 *Namn:* {lead.get('name','–')}\n"
         f"📞 *Telefon:* `{lead.get('phone','–')}`\n"
@@ -322,7 +322,7 @@ def api_test_telegram():
     chat_id = cfg.get("telegram_chat_id", "").strip()
     if not token or not chat_id:
         return jsonify({"ok": False, "error": "Fyll i bot-token och chat-id först."})
-    ok, info = _tg_send(token, chat_id, "✅ *Städlinjen* – Telegram är kopplat! Här kommer dina leads att dyka upp.")
+    ok, info = _tg_send(token, chat_id, "✅ *Solidsurvice* – Telegram är kopplat! Här kommer dina leads att dyka upp.")
     return jsonify({"ok": ok, "error": None if ok else info})
 
 
@@ -399,7 +399,7 @@ def read_agent_log():
 
 
 def build_offer_email(cfg, p):
-    company = cfg.get("company", "Städlinjen AB")
+    company = cfg.get("company", "Solidsurvice")
     phone = cfg.get("phone", "")
     email = cfg.get("email", "")
     site = cfg.get("site_url", "").strip()
@@ -440,7 +440,7 @@ def send_email(cfg, to_addr, subject, body):
         return False, "SMTP ej konfigurerat"
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
-    msg["From"] = formataddr((cfg.get("company", "Städlinjen AB"), user))
+    msg["From"] = formataddr((cfg.get("company", "Solidsurvice"), user))
     msg["To"] = to_addr
     msg["List-Unsubscribe"] = f"<mailto:{user}?subject=avregistrera>"
     try:
@@ -624,7 +624,7 @@ def listen_tick():
             new_hits += 1
             agent_log(f"👂 Möjlig kund/omnämnande: {title[:80]}")
             c2 = load_config()
-            comp = c2.get("company", "Städlinjen")
+            comp = c2.get("company", "Solidsurvice")
             site = c2.get("site_url", "").strip() or "(din hemsida)"
             reply = (f"Hej! Vi på {comp} är en lokal städfirma i Stockholm och hjälper "
                      f"gärna till. Hör av dig så fixar vi en kostnadsfri offert med RUT-avdrag: {site} 🙂")
@@ -695,7 +695,7 @@ def static_files(filename):
 DASHBOARD_HTML = r"""
 <!DOCTYPE html><html lang="sv"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kontrollcenter – Städlinjen AB</title>
+<title>Kontrollcenter – Solidsurvice</title>
 <style>
  *{box-sizing:border-box;margin:0;font-family:'Segoe UI',system-ui,sans-serif}
  body{background:#f1f5f9;color:#0f172a}
@@ -756,7 +756,7 @@ DASHBOARD_HTML = r"""
 </style></head><body>
  <div class="top">
    <div class="mark">S</div>
-   <div><h1>Kontrollcenter</h1><span>Städlinjen AB · allt på ett ställe</span></div>
+   <div><h1>Kontrollcenter</h1><span>Solidsurvice · allt på ett ställe</span></div>
    <div class="live">🟢 <b id="liveCount">0</b> leads · uppdateras live</div>
  </div>
  <div class="tabs">
@@ -927,7 +927,7 @@ DASHBOARD_HTML = r"""
  </div>
 
 <script>
-let LEADS=[], PROSPECTS=[], SETTINGS={company:'Städlinjen AB',phone:'',email:''};
+let LEADS=[], PROSPECTS=[], SETTINGS={company:'Solidsurvice',phone:'',email:''};
 const $=s=>document.querySelector(s);
 document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -1001,7 +1001,7 @@ async function loadProspects(){
   renderProspects();
 }
 function prospectEmail(p){
-  const company=SETTINGS.company||'Städlinjen AB';
+  const company=SETTINGS.company||'Solidsurvice';
   const phone=SETTINGS.phone||'';const email=SETTINGS.email||'';
   const subject=`Städning av ${p.company} – offert från ${company}`;
   const body=`Hej!
@@ -1158,7 +1158,7 @@ if __name__ == "__main__":
     threading.Thread(target=agent_loop, daemon=True).start()
     threading.Thread(target=listen_loop, daemon=True).start()
     print("=" * 52)
-    print("  Stadlinjen AB - Kontrollcenter + Auto-agent kor!")
+    print("  Solidsurvice - Kontrollcenter + Auto-agent kor!")
     print(f"   Hemsida:    http://localhost:{PORT}")
     print(f"   Dashboard:  http://localhost:{PORT}/dashboard")
     print("   Auto-agent: aktiveras i fliken 'Auto-agent'")

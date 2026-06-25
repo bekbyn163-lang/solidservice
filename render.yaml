@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: stadlinjen
+    name: solidservice
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
