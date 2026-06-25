@@ -1,4 +1,4 @@
-/* ===== Solidsurvice – Säljchatt (skriptad, $0, ingen AI-nyckel) =====
+/* ===== Solidservice – Säljchatt (skriptad, $0, ingen AI-nyckel) =====
    Kvalificerar kunden, räknar ut RUT-pris, fångar nummer,
    skickar leadet till backend -> Telegram till din bror. */
 
@@ -25,7 +25,7 @@
 
   const flow = [
     {
-      bot: "Hej och välkommen till Solidsurvice! 👋 Vad behöver du hjälp med?",
+      bot: "Hej och välkommen till Solidservice! 👋 Vad behöver du hjälp med?",
       options: ["Hemstädning", "Flyttstädning", "Kontorsstädning", "Fönsterputs", "Annat"],
       key: "service",
     },
@@ -100,7 +100,7 @@
     <div class="slc__panel" id="slcPanel">
       <div class="slc__head">
         <div class="slc__avatar">S</div>
-        <div><strong>Solidsurvice</strong><span>Svarar direkt · ⭐ 4,9</span></div>
+        <div><strong>Solidservice</strong><span>Svarar direkt · ⭐ 4,9</span></div>
         <button class="slc__close" id="slcClose">✕</button>
       </div>
       <div class="slc__body" id="slcBody"></div>

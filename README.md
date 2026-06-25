@@ -1,4 +1,4 @@
-# Solidsurvice – Lead-motor 🧽
+# Solidservice – Lead-motor 🧽
 
 En komplett, gratis och **laglig** lead-maskin för städfirman.
 

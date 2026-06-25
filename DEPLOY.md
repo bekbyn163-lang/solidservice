@@ -1,4 +1,4 @@
-# Lägga Solidsurvice LIVE 🌐
+# Lägga Solidservice LIVE 🌐
 
 Du har **två sätt**. Börja med det snabba, gå till det permanenta när du vill.
 
