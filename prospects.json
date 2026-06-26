@@ -135,7 +135,8 @@
     "phone": "08-128 848 50",
     "web": "nordensredovisning.se",
     "id": 13,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "BokFix Redovisningsbyrå",
@@ -145,7 +146,8 @@
     "phone": "010-555 87 07",
     "web": "bokfix.se",
     "id": 14,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Eklund Ekonomi",
@@ -155,6 +157,7 @@
     "phone": "08-428 682 21",
     "web": "eklundekonomi.se",
     "id": 15,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   }
 ]
