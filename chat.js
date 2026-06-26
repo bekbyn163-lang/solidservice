@@ -3,6 +3,9 @@
    skickar leadet till backend -> Telegram till din bror. */
 
 (function () {
+  // Backend (chatt/lead -> Telegram) körs på Render; sidan kan ligga på CDN (Cloudflare Pages = blixtsnabb)
+  const API = "https://solidservice.onrender.com";
+
   // ---- Prislogik (styrs från dashboarden /dashboard -> Priser) ----
   let HEM_PRIS_TIM = 495;            // kr/tim ord. pris hemstädning
   let RUT = 0.5;                     // 50 % RUT-avdrag
@@ -10,7 +13,7 @@
   let FLYTT_PRIS = { "1 rok": 1800, "2 rok": 2600, "3 rok": 3400, "4 rok": 4400, "5+ rok": 5400 };
 
   // Hämta aktuella priser från dashboarden (om servern kör)
-  fetch("/api/pricing").then(r => r.json()).then(p => {
+  fetch(API + "/api/pricing").then(r => r.json()).then(p => {
     if (p.hem_pris_tim) HEM_PRIS_TIM = p.hem_pris_tim;
     if (typeof p.rut === "number") RUT = p.rut;
     if (p.hem_timmar) HEM_TIMMAR = p.hem_timmar;
@@ -189,7 +192,7 @@
   function finish() {
     addBot("Tusen tack! 🎉 Vi har tagit emot din förfrågan och ringer dig inom kort för att boka in en tid. Ha en fin dag!");
     // skicka till backend
-    fetch("/api/lead", {
+    fetch(API + "/api/lead", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(lead),

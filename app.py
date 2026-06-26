@@ -71,6 +71,22 @@ DEFAULT_PROSPECTS = [
 
 app = Flask(__name__, static_folder=None)
 
+
+# CORS: låt sidan (på Cloudflare Pages / egen domän) anropa detta API (chatt -> lead -> Telegram)
+@app.after_request
+def _add_cors(resp):
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PATCH, DELETE, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return resp
+
+
+@app.before_request
+def _handle_preflight():
+    if request.method == "OPTIONS":
+        return ("", 204)
+
+
 STOCKHOLM_AREAS = [
     "Stockholm", "Solna", "Sundbyberg", "Bromma", "Kista", "Täby", "Sollentuna",
     "Nacka", "Södermalm", "Östermalm", "Vasastan", "Kungsholmen", "Liljeholmen",
