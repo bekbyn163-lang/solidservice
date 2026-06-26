@@ -1,0 +1,40 @@
+name: Kund-bevakare (Stockholm)
+
+# Kollar var 3:e timme efter folk som soker stadhjalp + en manuell "Run"-knapp.
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # for att spara hunter_seen.json (undvik dubbletter)
+
+concurrency:
+  group: hunter
+  cancel-in-progress: false
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Leta kunder
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          SITE_URL: "https://bekbyn163-lang.github.io/solidservice/"
+          ALERT_FEEDS: ${{ secrets.ALERT_FEEDS }}
+        run: python cloud_hunter.py
+
+      - name: Spara vad som redan setts
+        run: |
+          git config user.name "solidservice-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add hunter_seen.json || true
+          git commit -m "Auto: uppdatera bevakare (sedda inlagg) [skip ci]" || echo "inget nytt"
+          git push || echo "inget att pusha"
