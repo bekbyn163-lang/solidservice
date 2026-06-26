@@ -98,6 +98,7 @@ DEFAULT_CONFIG = {
     "telegram_bot_token": "",
     "telegram_chat_id": "",
     "company": "Solidservice",
+    "sender_name": "",
     "phone": "08-559 23 100",
     "email": "info@solidservice.se",
     "address": "Box 4021, 169 04 Solna",
@@ -152,6 +153,7 @@ def load_config():
         ("SMTP_USER", "smtp_user"),
         ("SMTP_PASS", "smtp_pass"),
         ("SMTP_HOST", "smtp_host"),
+        ("SENDER_NAME", "sender_name"),
     ]:
         if os.environ.get(env_key):
             cfg[cfg_key] = os.environ[env_key].strip()
@@ -430,36 +432,31 @@ def build_offer_email(cfg, p):
     phone = cfg.get("phone", "")
     email = cfg.get("email", "")
     site = cfg.get("site_url", "").strip()
-    subject = f"Städning av era lokaler – {p['company']}"
-    contact = email or "info@solidservice.se"
-    # Om sajt-länk finns: bjud in dem att ansöka själva på hemsidan (då fångas
-    # deras uppgifter i offerten -> skickas till din bror). Annars: svara på mejlet.
+    # Mänskligt, kort, 1-till-1 – INTE mass-mejl. Inga punktlistor/broschyrtext,
+    # ingen robot-footer. Signeras med riktigt namn om sender_name är satt.
+    name = cfg.get("sender_name", "").strip()
+    intro = (f"Jag heter {name} och driver Solidservice"
+             if name else "Jag driver Solidservice")
+    signoff = (f"{name}, Solidservice" if name else "Vänliga hälsningar,\nSolidservice")
+    subject = "Städhjälp till ert kontor?"
     if site:
         cta = (
-            "Vill ni ha en kostnadsfri offert? Det tar 2 minuter – fyll i några snabba "
-            f"frågor här så återkommer vi med pris och tid:\n{site}\n\n"
-            "Ni kan också bara svara på det här mejlet."
+            "Om det är intressant fixar jag gärna en kostnadsfri offert – det tar ett par "
+            f"minuter att fylla i kort här:\n{site}\n\n"
+            "Du kan också bara svara på det här mejlet så hörs vi."
         )
     else:
-        cta = (
-            "Vill ni ha en kostnadsfri offert anpassad efter era lokaler? "
-            "Svara bara på det här mejlet så återkommer jag med ett förslag."
-        )
+        cta = ("Om det är intressant svarar du bara på det här mejlet, så återkommer "
+               "jag med ett förslag.")
     body = (
         "Hej!\n\n"
-        f"Jag driver {company}, en lokal städfirma här i Stockholm.\n\n"
-        f"Jag hörde av mig eftersom ni driver {p['type'].lower()} i {p['area']}, och ville "
-        "fråga om ni har behov av städning av era lokaler – regelbundet eller vid enstaka tillfällen.\n\n"
-        "Vi hjälper företag i Stockholm med kontorsstädning och erbjuder:\n"
-        "- Samma städare varje gång\n"
-        "- Miljömärkta produkter\n"
-        "- Fasta priser utan bindningstid\n\n"
+        f"{intro}, en liten lokal städfirma här i Stockholm.\n\n"
+        f"Jag såg att ni driver {p['type'].lower()} i {p['area']} och ville bara höra – "
+        "har ni hjälp med städningen av lokalen idag? Vi tar både löpande och enstaka "
+        "uppdrag, med samma personal varje gång och miljövänliga produkter.\n\n"
         f"{cta}\n\n"
-        "Vänliga hälsningar,\n"
-        f"{company}\n{contact}"
-        + (f"\n{site}" if site else "")
-        + "\n\n---\n"
-        "Vill ni inte få fler mejl från oss? Svara bara \"avregistrera\" så tar vi bort er direkt."
+        f"Ha en fin dag!\n{signoff}\n\n"
+        "(Vill du inte bli kontaktad igen? Säg bara till, så hör jag inte av mig mer.)"
     )
     return subject, body
 
