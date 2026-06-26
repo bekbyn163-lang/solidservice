@@ -7,7 +7,8 @@
     "phone": "073-250 38 00",
     "web": "kontorshotellistockholm.se",
     "id": 1,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Places Coworking",
@@ -17,7 +18,8 @@
     "phone": "076-184 98 97",
     "web": "joinplaces.co",
     "id": 2,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Spacent",
@@ -27,7 +29,8 @@
     "phone": "",
     "web": "spacent.com",
     "id": 3,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Convendum",
@@ -57,7 +60,8 @@
     "phone": "08-660 64 06",
     "web": "framtand.se",
     "id": 6,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "City Dental",
@@ -87,7 +91,8 @@
     "phone": "08-650 28 50",
     "web": "stockholmsadvokat.se",
     "id": 9,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Olsson Lilja Advokater",
@@ -97,7 +102,8 @@
     "phone": "08-27 71 81",
     "web": "olssonlilja.se",
     "id": 10,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Advokatbyrå Elisabeth Fritz",
@@ -107,7 +113,8 @@
     "phone": "08-21 15 60",
     "web": "advokatfritz.com",
     "id": 11,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Din Advokat",
@@ -117,7 +124,8 @@
     "phone": "08-545 10 800",
     "web": "dinadv.se",
     "id": 12,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-26"
   },
   {
     "company": "Nordens Redovisning",
