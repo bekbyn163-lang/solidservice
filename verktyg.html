@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Kundverktyg – Solidservice</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root{ --teal:#0f8a8a; --teal-d:#0b6d6d; --ink:#16323a; --muted:#5b6b73; --line:#e3eaec; --bg:#f4f8f8; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+    .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+    h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.7rem;margin:0 0 4px}
+    .sub{color:var(--muted);margin:0 0 22px}
+    h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.15rem;margin:30px 0 12px;display:flex;align-items:center;gap:8px}
+    .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+    .card .label{font-weight:700;font-size:.92rem;color:var(--teal-d);margin-bottom:8px}
+    .msg{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:.96rem}
+    .copy{margin-top:10px;border:0;background:var(--teal);color:#fff;font-weight:700;font-size:.95rem;padding:10px 18px;border-radius:999px;cursor:pointer;transition:.15s}
+    .copy:hover{background:var(--teal-d)}
+    .copy.ok{background:#188a4a}
+    .places a{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px;text-decoration:none;color:var(--ink);font-weight:600}
+    .places a:hover{border-color:var(--teal)}
+    .places small{color:var(--muted);font-weight:500}
+    .pill{font-size:.78rem;background:#e7f3f3;color:var(--teal-d);padding:3px 9px;border-radius:999px;font-weight:700;white-space:nowrap}
+    .tip{background:#fff7e6;border:1px solid #f3e2b8;border-radius:12px;padding:13px 15px;color:#6b5a2c;font-size:.92rem;margin-bottom:8px}
+    .foot{color:var(--muted);font-size:.85rem;margin-top:34px;text-align:center}
+    a.home{color:var(--teal-d);font-weight:600;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🧰 Kundverktyg</h1>
+    <p class="sub">Kopiera ett meddelande → posta där folk frågar/letar → klart. Inget krångel.</p>
+    <div class="tip">💡 <b>Reglerna (enkelt):</b> svara på folk som <b>själva frågar</b>, eller lägg en <b>egen annons</b>. Massutskick till folk som inte bett om det = nej. Det här = ja. ✅</div>
+
+    <h2>✍️ Färdiga meddelanden <span class="pill">tryck Kopiera</span></h2>
+    <div id="messages"></div>
+
+    <h2>📍 Var du postar</h2>
+    <div class="places" id="places"></div>
+
+    <p class="foot"><a class="home" href="index.html">← Till hemsidan</a> · Spara/bokmärk den här sidan så har du den nära.</p>
+  </div>
+
+  <script>
+    // Byt bara denna rad nar ni far en renare lank (t.ex. solidservice.pages.dev / solidservice.se)
+    const LINK = "https://bekbyn163-lang.github.io/solidservice/";
+
+    const messages = [
+      { label: "Svar när någon frågar i en FB-grupp",
+        text: `Hej! Vi på Solidservice tar städuppdrag i hela Stockholm – hem, flytt & kontor, alltid med 50% RUT-avdrag och nöjd-kund-garanti. Skicka gärna ett PM eller kika på ${LINK} så fixar vi en kostnadsfri offert! 🧽` },
+      { label: "Egen annons (Blocket / FB-grupp / anslagstavla)",
+        text: `🧽 Städhjälp i Stockholm – Solidservice\nHem-, flytt- & kontorsstädning. Fasta priser, miljömärkt, samma städare varje gång. 50% RUT direkt på fakturan, nöjd-kund-garanti.\nGratis offert: ${LINK}` },
+      { label: "Kort PM / DM till någon som visat intresse",
+        text: `Hej! Tack för att du hörde av dig 🙌 Vi fixar gärna en kostnadsfri offert – berätta bara typ av städning, ungefär hur stor yta och vilket område, så återkommer jag med pris och tid. Du kan även fylla i snabbt här: ${LINK}` },
+      { label: "Företag / kontorsstädning (B2B)",
+        text: `Hej! Jag driver Solidservice, en lokal städfirma i Stockholm. Har ni behov av städning av era lokaler – löpande eller enstaka? Vi har fasta priser, samma personal varje gång och miljövänliga produkter. Vill ni ha en kostnadsfri offert? Hör av er eller kika på ${LINK}` },
+      { label: "Recensions-/katalogprofil (kort beskrivning)",
+        text: `Solidservice – städfirma i Stockholm. Hemstädning, flyttstädning, kontorsstädning och fönsterputs med 50% RUT-avdrag. Fasta priser, miljömärkt, nöjd-kund-garanti. Kostnadsfri offert: ${LINK}` },
+    ];
+
+    const places = [
+      { name: "Facebook-grupper (störst!)", note: "Sök t.ex. \"Bromma köp & sälj\", \"Rekommendationer Stockholm\" – svara när folk frågar om städ", url: "https://www.facebook.com/search/groups/?q=rekommendationer%20stockholm" },
+      { name: "Google Företagsprofil", note: "Gratis – syns när folk googlar \"städfirma Stockholm\"", url: "https://www.google.com/business/" },
+      { name: "Blocket – Tjänster", note: "Lägg ut din städannons", url: "https://www.blocket.se/" },
+      { name: "Reco.se", note: "Skapa profil + samla omdömen (svenskar litar på Reco)", url: "https://www.reco.se/" },
+      { name: "Hitta.se", note: "Gratis företagsannons", url: "https://www.hitta.se/" },
+      { name: "Eniro.se", note: "Gratis företagsannons", url: "https://www.eniro.se/" },
+      { name: "Offerta.se", note: "Folk postar städförfrågningar – du svarar", url: "https://www.offerta.se/" },
+      { name: "Servicefinder.se", note: "Folk postar städförfrågningar – du svarar", url: "https://www.servicefinder.se/" },
+      { name: "Bark.com (Sverige)", note: "Köpklara leads – du svarar", url: "https://www.bark.com/sv/se/" },
+    ];
+
+    const mWrap = document.getElementById('messages');
+    messages.forEach(m => {
+      const c = document.createElement('div'); c.className = 'card';
+      c.innerHTML = `<div class="label">${m.label}</div><div class="msg"></div><button class="copy">📋 Kopiera</button>`;
+      c.querySelector('.msg').textContent = m.text;
+      const btn = c.querySelector('.copy');
+      btn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(m.text); } catch(e){
+          const r=document.createRange(); r.selectNode(c.querySelector('.msg')); getSelection().removeAllRanges(); getSelection().addRange(r); document.execCommand('copy'); getSelection().removeAllRanges();
+        }
+        btn.textContent = '✅ Kopierat!'; btn.classList.add('ok');
+        setTimeout(()=>{ btn.textContent='📋 Kopiera'; btn.classList.remove('ok'); }, 1800);
+      });
+      mWrap.appendChild(c);
+    });
+
+    const pWrap = document.getElementById('places');
+    places.forEach(p => {
+      const a = document.createElement('a'); a.href = p.url; a.target = '_blank'; a.rel='noopener';
+      a.innerHTML = `<span><b>${p.name}</b><br><small>${p.note}</small></span><span class="pill">Öppna ↗</span>`;
+      pWrap.appendChild(a);
+    });
+  </script>
+</body>
+</html>
