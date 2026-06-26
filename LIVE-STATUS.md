@@ -1,9 +1,16 @@
 # Solidservice – LIVE-status (2026-06-25)
 
-## ✅ SAJTEN ÄR LIVE
-**https://solidservice.onrender.com** — fungerar, testad, laddar perfekt.
+## ✅ SAJTEN ÄR LIVE — SNABB (ingen kallstart)
+**Publik sajt (DELA DENNA): https://bekbyn163-lang.github.io/solidservice/**
+- Hostas på **GitHub Pages** (gratis, globalt CDN, HTTPS, **öppnas direkt varje gång — ingen 30s-väntan**). Inget extra konto.
+- Statisk (index.html/styles.css/script.js/chat.js). Verifierat: CSS 182 regler, chatt-bubbla + kontaktformulär funkar, inga trasiga bilder.
 
-- **Hosting:** Render (gratis-plan, inget kreditkort). Sover efter 15 min inaktivitet, ~30–50 s kallstart.
+**Backend (chatt/lead + dashboard): https://solidservice.onrender.com**
+- Render gratis (sover efter 15 min, ~30–50s kallstart — men det märks BARA när någon skickar ett lead, inte när sidan öppnas).
+- chat.js + script.js pekar på `https://solidservice.onrender.com/api/lead` (absolut URL). CORS påslaget i app.py (after_request `*` + OPTIONS-preflight). Commit 22b4552/9412f7b.
+- Dashboard: https://solidservice.onrender.com/dashboard
+- TODO (valfritt): keep-alive-ping var 10:e min så leads aldrig fastnar i kallstart.
+
 - **Repo:** https://github.com/bekbyn163-lang/solidservice (PUBLIC), branch `master`.
 - **Render service-id:** `srv-d8uocrsvikkc73es2rrg` (konto = inloggat via GitHub `bekbyn163-lang`, e-post bekbyn163@gmail.com).
 - **Fix som gjordes:** start-kommando = `gunicorn app:app --bind 0.0.0.0:$PORT` (i render.yaml + Procfile + i Render-fältet). Utan `--bind` hittar Render inte appen.
