@@ -98,7 +98,7 @@ DEFAULT_CONFIG = {
     "telegram_bot_token": "",
     "telegram_chat_id": "",
     "company": "Solidservice",
-    "sender_name": "",
+    "sender_name": "Sardor Khikmatov",
     "phone": "08-559 23 100",
     "email": "info@solidservice.se",
     "address": "Box 4021, 169 04 Solna",
