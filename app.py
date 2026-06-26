@@ -103,7 +103,7 @@ DEFAULT_CONFIG = {
     "address": "Box 4021, 169 04 Solna",
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
-    "site_url": "",
+    "site_url": "https://bekbyn163-lang.github.io/solidservice/",
     "meta_verify_token": "stadlinjen2026",
     "meta_page_token": "",
     "listen_enabled": False,
@@ -114,7 +114,7 @@ DEFAULT_CONFIG = {
     "listen_intent_words": ["söker", "sökes", "rekommend", "tips på", "tips om",
                              "någon som kan", "behöver", "letar efter", "vet ni",
                              "kan ni rekommendera", "hjälp med städ"],
-    "smtp_host": "smtp.gmail.com",
+    "smtp_host": "send.one.com",
     "smtp_port": 587,
     "smtp_user": "",
     "smtp_pass": "",
@@ -419,36 +419,42 @@ def build_offer_email(cfg, p):
     phone = cfg.get("phone", "")
     email = cfg.get("email", "")
     site = cfg.get("site_url", "").strip()
-    subject = f"Städning av {p['company']} – offert från {company}"
+    subject = f"Städning av era lokaler – {p['company']}"
+    contact = email or "info@solidservice.se"
     # Om sajt-länk finns: bjud in dem att ansöka själva på hemsidan (då fångas
-    # deras nummer i chatten -> bot skickar till din bror). Annars: telefon/svar.
+    # deras uppgifter i offerten -> skickas till din bror). Annars: svara på mejlet.
     if site:
         cta = (
-            f"Vill ni ha en kostnadsfri offert? Ansök på 2 minuter här – fyll i några "
-            f"snabba frågor så återkommer vi med pris och tid:\n{site}\n\n"
-            f"Eller svara på detta mejl / ring {phone}."
+            "Vill ni ha en kostnadsfri offert? Det tar 2 minuter – fyll i några snabba "
+            f"frågor här så återkommer vi med pris och tid:\n{site}\n\n"
+            "Ni kan också bara svara på det här mejlet."
         )
     else:
         cta = (
-            f"Får jag skicka en kostnadsfri offert anpassad efter er yta? "
-            f"Det tar 2 minuter på telefon: {phone}."
+            "Vill ni ha en kostnadsfri offert anpassad efter era lokaler? "
+            "Svara bara på det här mejlet så återkommer jag med ett förslag."
         )
     body = (
-        f"Hej!\n\n"
-        f"Jag driver {company}, en lokal städfirma i Stockholm.\n\n"
-        f"Jag såg att ni driver {p['type'].lower()} i {p['area']} och ville höra om ni har "
-        f"behov av regelbunden städning av era lokaler. Vi hjälper flera företag i området med "
-        f"kontorsstädning – samma personal varje gång, miljömärkta produkter och fasta priser "
-        f"utan bindningstid.\n\n"
+        "Hej!\n\n"
+        f"Jag driver {company}, en lokal städfirma här i Stockholm.\n\n"
+        f"Jag hörde av mig eftersom ni driver {p['type'].lower()} i {p['area']}, och ville "
+        "fråga om ni har behov av städning av era lokaler – regelbundet eller vid enstaka tillfällen.\n\n"
+        "Vi hjälper företag i Stockholm med kontorsstädning och erbjuder:\n"
+        "- Samma städare varje gång\n"
+        "- Miljömärkta produkter\n"
+        "- Fasta priser utan bindningstid\n\n"
         f"{cta}\n\n"
-        f"Vänliga hälsningar,\n{company}\n{phone}" + (f" · {email}" if email else "") + "\n\n"
-        f"---\nVill ni inte ha fler mejl från oss? Svara bara \"avregistrera\" så tar vi bort er direkt."
+        "Vänliga hälsningar,\n"
+        f"{company}\n{contact}"
+        + (f"\n{site}" if site else "")
+        + "\n\n---\n"
+        "Vill ni inte få fler mejl från oss? Svara bara \"avregistrera\" så tar vi bort er direkt."
     )
     return subject, body
 
 
 def send_email(cfg, to_addr, subject, body):
-    host = cfg.get("smtp_host", "smtp.gmail.com")
+    host = cfg.get("smtp_host", "send.one.com")
     port = int(cfg.get("smtp_port", 587))
     user = cfg.get("smtp_user", "").strip()
     pwd = cfg.get("smtp_pass", "").strip()
@@ -552,7 +558,7 @@ def api_agent():
         "site_url": cfg.get("site_url", ""),
         "meta_page_token": cfg.get("meta_page_token", ""),
         "meta_verify_token": cfg.get("meta_verify_token", "stadlinjen2026"),
-        "smtp_host": cfg.get("smtp_host", "smtp.gmail.com"),
+        "smtp_host": cfg.get("smtp_host", "send.one.com"),
         "smtp_port": cfg.get("smtp_port", 587),
         "daily_limit": cfg.get("agent_daily_limit", 15),
         "interval_min": cfg.get("agent_interval_min", 8),
