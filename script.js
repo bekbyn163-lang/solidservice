@@ -38,7 +38,8 @@ form.addEventListener('submit', (e) => {
     message: form.message.value,
     source: 'kontaktformulär',
   };
-  fetch('/api/lead', {
+  // Backend (lead -> Telegram) körs på Render; sidan kan ligga på CDN (snabb, ingen kallstart)
+  fetch('https://solidservice.onrender.com/api/lead', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(lead),
