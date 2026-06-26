@@ -477,7 +477,8 @@ def send_email(cfg, to_addr, subject, body):
         with smtplib.SMTP(host, port, timeout=20) as s:
             s.starttls()
             s.login(user, pwd)
-            s.sendmail(user, [to_addr], msg.as_string())
+            # Skicka kopia till oss sjalva (BCC) sa varje utskick syns i inkorgen
+            s.sendmail(user, [to_addr, user], msg.as_string())
         return True, "ok"
     except Exception as e:
         return False, str(e)

@@ -1,10 +1,9 @@
 name: B2B-utskick (kontorsstadning)
 
-# PAUSAD: automatiskt schema avstangt. Endast manuell "Run workflow"-knapp aktiv.
-# (Aterstarta genom att avkommentera schedule-raderna nedan.)
+# Kor automatiskt vardagar 08:00 UTC (~09-10 svensk tid) + en manuell "Run"-knapp.
 on:
-  # schedule:
-  #   - cron: "0 8 * * 1-5"
+  schedule:
+    - cron: "0 8 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
