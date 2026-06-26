@@ -136,14 +136,25 @@ DEFAULT_CONFIG = {
 def load_config():
     if not os.path.exists(CONFIG_FILE):
         save_config(DEFAULT_CONFIG)
-        return dict(DEFAULT_CONFIG)
-    with open(CONFIG_FILE, encoding="utf-8") as f:
-        cfg = json.load(f)
-    for k, v in DEFAULT_CONFIG.items():
-        cfg.setdefault(k, v)
-    if "pricing" in cfg:
-        for k, v in DEFAULT_CONFIG["pricing"].items():
-            cfg["pricing"].setdefault(k, v)
+        cfg = dict(DEFAULT_CONFIG)
+    else:
+        with open(CONFIG_FILE, encoding="utf-8") as f:
+            cfg = json.load(f)
+        for k, v in DEFAULT_CONFIG.items():
+            cfg.setdefault(k, v)
+        if "pricing" in cfg:
+            for k, v in DEFAULT_CONFIG["pricing"].items():
+                cfg["pricing"].setdefault(k, v)
+    # Hemligheter via miljövariabler (Render env / GitHub Secrets) – håller dem ur koden/repot
+    for env_key, cfg_key in [
+        ("TELEGRAM_BOT_TOKEN", "telegram_bot_token"),
+        ("TELEGRAM_CHAT_ID", "telegram_chat_id"),
+        ("SMTP_USER", "smtp_user"),
+        ("SMTP_PASS", "smtp_pass"),
+        ("SMTP_HOST", "smtp_host"),
+    ]:
+        if os.environ.get(env_key):
+            cfg[cfg_key] = os.environ[env_key].strip()
     return cfg
 
 
