@@ -50,6 +50,17 @@ Höll på att kolla i one.com → **Mina produkter → Hantera (solidservice.se)
 ## ▶️ Starta nästa chatt med
 "Fortsätt Solidservice live — läs LIVE-STATUS.md i jword/stadlinjen. Sajten är live på onrender. Vi ska flytta DNS till Cloudflare (gratis) för solidservice.se. Använd Microsoft Edge (Browser 2), ALDRIG Chrome. Kolla först om one.com tillåter nameserver-byte."
 
+## 📧 24/7 B2B-utskicksrobot (byggd 2026-06-25)
+- `cloud_outreach.py` + `.github/workflows/outreach.yml` = GitHub Actions skickar 8 B2B-offertmejl/vardag (08:00 UTC) + "Run workflow"-knapp för manuell körning.
+- Skickar via **one.com SMTP** (`send.one.com`) från **info@solidservice.se** → SPF/DKIM/DMARC stämmer = ej spam (INTE Gmail – då studsar det pga DMARC p=reject). Proffsig B2B-mall i `build_offer_email()`. Opt-out i varje mejl (lagligt B2B mot företag, ej privatpersoner).
+- Återanvänder app.py (load_prospects/build_offer_email/send_email/write_prospects). Markerar "Kontaktad", committar prospects.json tillbaka. 15 riktiga Stockholmsföretag i kön (~2 dagar) – fyll på för mer.
+- **GÅ SKARP (användaren gör, jag får ej skriva lösenord):**
+  1. one.com → E-post → använd/skapa `info@solidservice.se`, sätt lösenord.
+  2. GitHub repo → Settings → Secrets and variables → Actions → lägg `SMTP_USER`=info@solidservice.se och `SMTP_PASS`=lösenordet.
+  3. (valfritt) Telegram: `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` som Secrets → leads/utskick pingas till brodern.
+  4. Skicka ikväll: Actions-fliken → "B2B-utskick" → Run workflow.
+- HEMSIDA städad 2026-06-25: bort med adress, telefon, fejk-recensioner, "600+/4,9", ID06, påhittad historik; "Läs mer"→"Begär offert"; döda länkar fixade; integritetspolicy.html tillagd.
+
 ## Regler
 - Webbläsarstyrning: ENDAST Microsoft Edge (Browser 2, deviceId 484eb0fe-ca99-4181-a3a8-131531d1b8dd). ALDRIG Chrome (Browser 1).
 - Användaren skriver alla lösenord själv + klickar alla Authorize/OAuth/godkännanden.
