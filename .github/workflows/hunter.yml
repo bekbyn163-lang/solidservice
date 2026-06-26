@@ -27,7 +27,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          SITE_URL: "https://bekbyn163-lang.github.io/solidservice/"
+          SITE_URL: "https://solidservicestad.onrender.com/"
           ALERT_FEEDS: ${{ secrets.ALERT_FEEDS }}
         run: python cloud_hunter.py
 

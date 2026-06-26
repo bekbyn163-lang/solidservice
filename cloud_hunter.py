@@ -18,7 +18,7 @@ import urllib.parse
 
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 CHAT = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
-LINK = os.environ.get("SITE_URL", "https://bekbyn163-lang.github.io/solidservice/").strip()
+LINK = os.environ.get("SITE_URL", "https://solidservicestad.onrender.com/").strip()
 FEEDS = [f.strip() for f in os.environ.get("ALERT_FEEDS", "").split(",") if f.strip()]
 MAX_PINGS = int(os.environ.get("HUNTER_MAX_PINGS", "6"))
 SEEN_FILE = "hunter_seen.json"

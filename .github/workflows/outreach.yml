@@ -33,7 +33,7 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SMTP_HOST: send.one.com
           OUTREACH_PER_RUN: "8"
-          SITE_URL: "https://bekbyn163-lang.github.io/solidservice/"
+          SITE_URL: "https://solidservicestad.onrender.com/"
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python cloud_outreach.py

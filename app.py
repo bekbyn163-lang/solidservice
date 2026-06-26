@@ -104,7 +104,7 @@ DEFAULT_CONFIG = {
     "address": "Box 4021, 169 04 Solna",
     "orgnr": "559123-4567",
     "service_area": "Stockholm",
-    "site_url": "https://bekbyn163-lang.github.io/solidservice/",
+    "site_url": "https://solidservicestad.onrender.com/",
     "meta_verify_token": "stadlinjen2026",
     "meta_page_token": "",
     "listen_enabled": False,
