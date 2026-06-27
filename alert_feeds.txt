@@ -1,3 +1,8 @@
-# Google Alerts RSS-flöden (en URL per rad). Claude fyller på dessa när
-# bevakningarna skapats. Rader som börjar med # ignoreras.
-# Exempel: https://www.google.com/alerts/feeds/12345678901234567890/0987654321
+# Google Alerts RSS-flöden (en URL per rad). Bevakar Stockholm-städkunder.
+# Rader som börjar med # ignoreras. Skapade 2026-06-27.
+# söker städhjälp Stockholm
+https://www.google.com/alerts/feeds/06550667453708872059/14295424796753346129
+# rekommendera städfirma Stockholm
+https://www.google.com/alerts/feeds/06550667453708872059/4508427595989218336
+# söker flyttstädning Stockholm
+https://www.google.com/alerts/feeds/06550667453708872059/995133172182148246
