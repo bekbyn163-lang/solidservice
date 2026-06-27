@@ -279,5 +279,125 @@
     "web": "ignitetraininghub.se",
     "id": 27,
     "status": "Att kontakta"
+  },
+  {
+    "company": "Tegelbacken",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "bokning@tegelbacken.com",
+    "phone": "+46 8 25 16 55",
+    "web": "tegelbacken.com",
+    "id": 28,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Kouzina",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@kouzina.se",
+    "phone": "+4686644228",
+    "web": "kouzina.se",
+    "id": 29,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Stadshuskällaren",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "bokning@stadshuskallarensthlm.se",
+    "phone": "+46858621830",
+    "web": "stadshuskallarensthlm.se",
+    "id": 30,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Indian Plaza",
+    "type": "Restaurang",
+    "area": "Solna",
+    "email": "info@indianplazafrosunda.se",
+    "phone": "+46840923500",
+    "web": "indianplazafrosunda.se",
+    "id": 31,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Sazna Fusion",
+    "type": "Restaurang",
+    "area": "Solna",
+    "email": "info@sazna.se",
+    "phone": "+46 8 735 47 47",
+    "web": "sazna.se",
+    "id": 32,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Gamla Orangeriet",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@gamlaorangeriet.se",
+    "phone": "+4686120959",
+    "web": "gamlaorangeriet.se",
+    "id": 33,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "450 Gradi",
+    "type": "Restaurang",
+    "area": "Lidingö",
+    "email": "kontakt@450gradi.se",
+    "phone": "",
+    "web": "450gradi.se",
+    "id": 34,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Villa Godthem",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "reservation@villagodthem.se",
+    "phone": "",
+    "web": "villagodthem.se",
+    "id": 35,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Järnvägsrestaurangen Östra Station",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "kontakt@ostrastation.se",
+    "phone": "+4686120014",
+    "web": "ostrastation.se",
+    "id": 36,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Texas Longhorn",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "fleminggatan@texaslonghorn.se",
+    "phone": "+4686511661",
+    "web": "texaslonghorn.se",
+    "id": 37,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Tabbouli",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "soder@tabbouli.eu",
+    "phone": "+46 8 650 25 00",
+    "web": "tabbouli.eu",
+    "id": 38,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Lokal Izakaya",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "restaurangen@lokalizakaya.se",
+    "phone": "+4686509809",
+    "web": "lokalizakaya.se",
+    "id": 39,
+    "status": "Att kontakta"
   }
 ]

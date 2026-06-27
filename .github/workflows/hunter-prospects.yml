@@ -1,0 +1,40 @@
+name: Kund-hittare (nya foretag)
+
+# Hittar nya Stockholmsforetag med verifierad publik mejl via OpenStreetMap +
+# skrapar deras egen sida. Kor man/ons/fre 06:00 UTC (fore utskicket 08:00) +
+# manuell "Run". Ingen API-nyckel, inga secrets behovs.
+on:
+  schedule:
+    - cron: "0 6 * * 1,3,5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write   # for att committa tillbaka prospects.json
+
+concurrency:
+  group: prospect-hunter
+  cancel-in-progress: false
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Leta nya foretag + verifiera mejl
+        env:
+          HUNTER_MAX_NEW: "10"
+          HUNTER_MAX_VISIT: "90"
+        run: python prospect_hunter.py
+
+      - name: Spara nya prospekt
+        run: |
+          git config user.name "solidservice-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add prospects.json || true
+          git commit -m "Auto: nya kund-prospekt fran hittaren [skip ci]" || echo "inget nytt"
+          git push || echo "inget att pusha"

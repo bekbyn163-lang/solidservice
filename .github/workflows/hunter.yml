@@ -31,10 +31,10 @@ jobs:
           ALERT_FEEDS: ${{ secrets.ALERT_FEEDS }}
         run: python cloud_hunter.py
 
-      - name: Spara vad som redan setts
+      - name: Spara vad som redan setts + nya kund-leads
         run: |
           git config user.name "solidservice-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add hunter_seen.json || true
-          git commit -m "Auto: uppdatera bevakare (sedda inlagg) [skip ci]" || echo "inget nytt"
+          git add hunter_seen.json organic_leads.json || true
+          git commit -m "Auto: uppdatera bevakare + kund-leads [skip ci]" || echo "inget nytt"
           git push || echo "inget att pusha"

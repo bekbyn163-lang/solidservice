@@ -13,6 +13,7 @@ import re
 import json
 import time
 import html
+import datetime
 import urllib.request
 import urllib.parse
 
@@ -22,18 +23,42 @@ LINK = os.environ.get("SITE_URL", "https://solidservicestad.onrender.com/").stri
 FEEDS = [f.strip() for f in os.environ.get("ALERT_FEEDS", "").split(",") if f.strip()]
 MAX_PINGS = int(os.environ.get("HUNTER_MAX_PINGS", "6"))
 SEEN_FILE = "hunter_seen.json"
+LEADS_OUT = "organic_leads.json"   # visas på den lätta dashboarden (kunder.html)
+KEEP = 60                          # hur många leads vi sparar på dashboarden
 
-REPLY = (
-    "Hej! Vi på Solidservice tar städuppdrag i hela Stockholm – hem, flytt & kontor, "
-    f"med 50% RUT-avdrag och nöjd-kund-garanti. Skicka ett PM eller kika på {LINK} "
-    "så fixar vi en kostnadsfri offert! 🧽"
-)
 
-# Tecken på att någon FRÅGAR (inte bara nämner städ) – håller kvaliteten uppe.
+def suggest_reply(title):
+    """Färdigt svar att klistra in, anpassat efter vad personen söker."""
+    t = title.lower()
+    if "flytt" in t:
+        jobb = "flyttstädning"
+    elif "kontor" in t or "lokal" in t or "företag" in t:
+        jobb = "kontorsstädning"
+    elif "fönster" in t or "fonster" in t:
+        jobb = "fönsterputs"
+    elif "trapp" in t or "förening" in t or "brf" in t:
+        jobb = "trapp-/föreningsstädning"
+    else:
+        jobb = "hemstädning"
+    return (
+        f"Hej! Såg att du söker hjälp med städ. Vi på Solidservice tar {jobb} i hela "
+        f"Stockholm, med 50% RUT-avdrag och nöjd-kund-garanti. Hör av dig så fixar jag "
+        f"en kostnadsfri offert direkt: {LINK}  /Sardor, Solidservice"
+    )
+
+
+REPLY = suggest_reply("")  # generell fallback
+
+# En riktig lead = någon som BÅDE pratar städ OCH frågar/söker. Annars = nyhet/brus.
+CLEAN = [
+    "städ", "stad", "flyttstäd", "hemstäd", "hemstädning", "kontorsstäd",
+    "fönsterputs", "fonsterputs", "städfirma", "städhjälp", "städning", "flyttstädning",
+    "trappstäd", "byggstäd", "storstäd",
+]
 INTENT = [
-    "sök", "sökes", "rekommend", "tips på", "tips om", "någon som", "ngn som",
-    "behöver", "letar", "letar efter", "vet ni", "kan ni rekommend", "hjälp med städ",
-    "hjälp med flytt", "förslag på", "anlita",
+    "sök", "sökes", "letar", "letar efter", "tips på", "tips om", "rekommend",
+    "någon som", "ngn som", "behöver", "vet ni", "förslag på", "anlita",
+    "kan ni rekommend", "hjälp med", "tar emot",
 ]
 
 
@@ -48,6 +73,19 @@ def seen_load():
 def seen_save(s):
     with open(SEEN_FILE, "w", encoding="utf-8") as f:
         json.dump(sorted(s)[-3000:], f, ensure_ascii=False)
+
+
+def leads_load():
+    try:
+        with open(LEADS_OUT, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+
+def leads_save(rows):
+    with open(LEADS_OUT, "w", encoding="utf-8") as f:
+        json.dump(rows[:KEEP], f, ensure_ascii=False, indent=2)
 
 
 def telegram(text):
@@ -100,9 +138,18 @@ def reddit_items():
     return out
 
 
+# Inbyggda gratisflöden (funkar från molnet, ingen inloggning). Google News
+# crawlar forum/bloggar; intent-filtret nedan rensar bort vanliga nyheter.
+BUILTIN_FEEDS = [
+    "https://news.google.com/rss/search?q=%22s%C3%B6ker+st%C3%A4dhj%C3%A4lp%22+stockholm&hl=sv&gl=SE&ceid=SE:sv",
+    "https://news.google.com/rss/search?q=%22letar+efter+st%C3%A4dfirma%22+stockholm&hl=sv&gl=SE&ceid=SE:sv",
+    "https://news.google.com/rss/search?q=rekommendera+st%C3%A4dfirma+stockholm&hl=sv&gl=SE&ceid=SE:sv",
+]
+
+
 def rss_items():
     out = []
-    for feed in FEEDS:
+    for feed in FEEDS + BUILTIN_FEEDS:
         try:
             xml = fetch(feed)
             entries = re.findall(r"<entry[\s>].*?</entry>", xml, re.S) \
@@ -128,33 +175,49 @@ def rss_items():
 
 def is_lead(item):
     blob = (item["title"] + " " + item["text"]).lower()
-    return any(w in blob for w in INTENT)
+    return any(c in blob for c in CLEAN) and any(w in blob for w in INTENT)
 
 
 def main():
-    if not TOKEN or not CHAT:
-        print("STOPP: TELEGRAM_BOT_TOKEN/CHAT_ID saknas. Inget gjort.")
-        return
     seen = seen_load()
+    leads = leads_load()
+    have = {l.get("id") for l in leads}
     items = reddit_items() + rss_items()
     new = [i for i in items if i["id"] not in seen]
     pinged = 0
+    added = 0
+    today = datetime.date.today().isoformat()
     for it in new:
         seen.add(it["id"])
-        if pinged >= MAX_PINGS:
-            continue
         if not is_lead(it):
             continue
-        msg = (
-            "🔎 Möjlig kund i Stockholm!\n\n"
-            f"{it['title']}\n({it['src']})\n👉 {it['link']}\n\n"
-            f"📋 Klistra in detta svar:\n{REPLY}"
-        )
-        if telegram(msg):
-            pinged += 1
-            time.sleep(2)
+        reply = suggest_reply(it["title"])
+        if it["id"] not in have:           # spara till dashboarden (kunder.html)
+            leads.insert(0, {
+                "id": it["id"],
+                "source": it["src"],
+                "title": it["title"],
+                "link": it["link"],
+                "message": reply,
+                "date": today,
+            })
+            have.add(it["id"])
+            added += 1
+        if TOKEN and CHAT and pinged < MAX_PINGS:   # och pinga Telegram
+            msg = (
+                "🔎 Möjlig kund i Stockholm!\n\n"
+                f"{it['title']}\n({it['src']})\n👉 {it['link']}\n\n"
+                f"📋 Klistra in detta svar:\n{reply}"
+            )
+            if telegram(msg):
+                pinged += 1
+                time.sleep(2)
     seen_save(seen)
-    print(f"Klart. {len(new)} nya inlägg hittade, {pinged} pingade till Telegram.")
+    leads_save(leads)
+    if not TOKEN or not CHAT:
+        print("(Telegram av – inga secrets. Leads sparas ändå till dashboarden.)")
+    print(f"Klart. {len(new)} nya inlägg, {added} nya kund-leads till dashboarden, "
+          f"{pinged} pingade till Telegram.")
 
 
 if __name__ == "__main__":
