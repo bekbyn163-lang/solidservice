@@ -20,7 +20,18 @@ import urllib.parse
 TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 CHAT = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 LINK = os.environ.get("SITE_URL", "https://solidservicestad.onrender.com/").strip()
-FEEDS = [f.strip() for f in os.environ.get("ALERT_FEEDS", "").split(",") if f.strip()]
+def _feedfile():
+    # Google Alerts-RSS kan ligga i alert_feeds.txt (en URL per rad) i repot,
+    # så boten kan kopplas på utan GitHub-secret. # = kommentar.
+    try:
+        return [l.strip() for l in open("alert_feeds.txt", encoding="utf-8")
+                if l.strip() and not l.strip().startswith("#")]
+    except Exception:
+        return []
+
+
+FEEDS = ([f.strip() for f in os.environ.get("ALERT_FEEDS", "").split(",") if f.strip()]
+         + _feedfile())
 MAX_PINGS = int(os.environ.get("HUNTER_MAX_PINGS", "6"))
 SEEN_FILE = "hunter_seen.json"
 LEADS_OUT = "organic_leads.json"   # visas på den lätta dashboarden (kunder.html)

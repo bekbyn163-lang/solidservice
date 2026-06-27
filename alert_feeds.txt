@@ -1,0 +1,3 @@
+# Google Alerts RSS-flöden (en URL per rad). Claude fyller på dessa när
+# bevakningarna skapats. Rader som börjar med # ignoreras.
+# Exempel: https://www.google.com/alerts/feeds/12345678901234567890/0987654321
