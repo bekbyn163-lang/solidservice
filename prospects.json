@@ -36,7 +36,7 @@
     "company": "Convendum",
     "type": "Premium kontorshotell",
     "area": "Stockholm city",
-    "email": "",
+    "email": "info@convendum.se",
     "phone": "010-510 08 88",
     "web": "convendum.se",
     "id": 4,
@@ -77,7 +77,7 @@
     "company": "Stockholm Tandläkarcenter",
     "type": "Tandvårdsklinik",
     "area": "Norrmalm",
-    "email": "",
+    "email": "info@stockholmtandlakarcenter.se",
     "phone": "08-10 10 80",
     "web": "stockholmtandlakarcenter.se",
     "id": 8,
@@ -159,5 +159,125 @@
     "id": 15,
     "status": "Kontaktad",
     "contacted": "2026-06-26"
+  },
+  {
+    "company": "Swedish Dental",
+    "type": "Tandvårdsklinik",
+    "area": "Kungsholmen",
+    "email": "reception@swedishdental.com",
+    "phone": "08-651 36 20",
+    "web": "swedishdental.com",
+    "id": 16,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Restaurang AG",
+    "type": "Restaurang",
+    "area": "Kungsholmen",
+    "email": "info@restaurangag.se",
+    "phone": "08-410 681 00",
+    "web": "restaurangag.se",
+    "id": 17,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Restaurang Oxenstiernan",
+    "type": "Restaurang",
+    "area": "Östermalm",
+    "email": "bokning@oxenstiernan.se",
+    "phone": "08-665 40 87",
+    "web": "oxenstiernan.se",
+    "id": 18,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Sifferhjälpen",
+    "type": "Redovisningsbyrå",
+    "area": "Vasastan",
+    "email": "info@sifferhjalpen.se",
+    "phone": "076-837 67 67",
+    "web": "sifferhjalpen.se",
+    "id": 19,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Restaurang B.A.R.",
+    "type": "Restaurang",
+    "area": "Blasieholmen",
+    "email": "info@restaurangbar.se",
+    "phone": "08-611 53 35",
+    "web": "restaurangbar.se",
+    "id": 20,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Lex Advokatbyrå",
+    "type": "Advokatbyrå",
+    "area": "Östermalm",
+    "email": "reception@lexadvokatbyra.se",
+    "phone": "08-545 689 50",
+    "web": "lexadvokatbyra.se",
+    "id": 21,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Svenska Hudkliniker",
+    "type": "Hudklinik",
+    "area": "Stockholm",
+    "email": "info@svenskahudkliniker.se",
+    "phone": "010-20 40 998",
+    "web": "svenskahudkliniker.se",
+    "id": 22,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Joylife",
+    "type": "Naprapat- & fysioterapiklinik",
+    "area": "Vasastan",
+    "email": "info@joylife.se",
+    "phone": "070-6000 600",
+    "web": "joylife.se",
+    "id": 23,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Restaurang Pelikan",
+    "type": "Restaurang",
+    "area": "Södermalm",
+    "email": "info@pelikan.se",
+    "phone": "08-556 090 90",
+    "web": "pelikan.se",
+    "id": 24,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "AcneSpecialisten",
+    "type": "Hudklinik",
+    "area": "Östermalm",
+    "email": "info@acnespecialisten.se",
+    "phone": "08-29 61 01",
+    "web": "acnespecialisten.se",
+    "id": 25,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Naprapathögskolans klinik",
+    "type": "Naprapatklinik",
+    "area": "Vasastan",
+    "email": "info@nimm.se",
+    "phone": "08-31 19 19",
+    "web": "naprapathogskolan.se",
+    "id": 26,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "IGNITE Training Hub",
+    "type": "Gym & träningscenter",
+    "area": "Vasastan",
+    "email": "info@ignitetraininghub.se",
+    "phone": "070-393 47 11",
+    "web": "ignitetraininghub.se",
+    "id": 27,
+    "status": "Att kontakta"
   }
 ]
