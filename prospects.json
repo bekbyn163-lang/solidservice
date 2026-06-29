@@ -399,5 +399,105 @@
     "web": "lokalizakaya.se",
     "id": 39,
     "status": "Att kontakta"
+  },
+  {
+    "company": "Spisa hos Helena",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "boka@spisahoshelena.se",
+    "phone": "+46 8 654 49 26",
+    "web": "spisahoshelena.se",
+    "id": 40,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Saffran",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@saffrankungsholmen.se",
+    "phone": "+4686543980",
+    "web": "saffrankungsholmen.se",
+    "id": 41,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Mäster Anders",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@masteranders.se",
+    "phone": "+4686542001",
+    "web": "masteranders.se",
+    "id": 42,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Uffe & Lottas",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "bokning@uffeolottas.se",
+    "phone": "+468330820",
+    "web": "uffeolottas.se",
+    "id": 43,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Il Forno Da Pino",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@ilfornodapino.nu",
+    "phone": "+46760203457",
+    "web": "ilfornodapino.nu",
+    "id": 44,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Trattorian",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "reservation@trattorian.se",
+    "phone": "+46 8 684 238 70",
+    "web": "trattorian.se",
+    "id": 45,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Mahalo",
+    "type": "Kafé",
+    "area": "Stockholm",
+    "email": "kungsholmen@mahalosthlm.se",
+    "phone": "+46704502887",
+    "web": "mahalosthlm.se",
+    "id": 46,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Mooncake",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@mooncake.se",
+    "phone": "+468169928",
+    "web": "mooncake.se",
+    "id": 47,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Newt Food",
+    "type": "Kafé",
+    "area": "Stockholm",
+    "email": "hello@newtfood.se",
+    "phone": "+46 8 650 93 50",
+    "web": "newtfood.se",
+    "id": 48,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Café Corniche",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@cafecorniche.se",
+    "phone": "+4686506629",
+    "web": "cafecorniche.se",
+    "id": 49,
+    "status": "Att kontakta"
   }
 ]
