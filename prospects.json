@@ -40,7 +40,8 @@
     "phone": "010-510 08 88",
     "web": "convendum.se",
     "id": 4,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Quick Office",
@@ -81,7 +82,8 @@
     "phone": "08-10 10 80",
     "web": "stockholmtandlakarcenter.se",
     "id": 8,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Stockholms Advokatbyrå",
@@ -168,7 +170,8 @@
     "phone": "08-651 36 20",
     "web": "swedishdental.com",
     "id": 16,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Restaurang AG",
@@ -178,7 +181,8 @@
     "phone": "08-410 681 00",
     "web": "restaurangag.se",
     "id": 17,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Restaurang Oxenstiernan",
@@ -188,7 +192,8 @@
     "phone": "08-665 40 87",
     "web": "oxenstiernan.se",
     "id": 18,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Sifferhjälpen",
@@ -198,7 +203,8 @@
     "phone": "076-837 67 67",
     "web": "sifferhjalpen.se",
     "id": 19,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Restaurang B.A.R.",
@@ -208,7 +214,8 @@
     "phone": "08-611 53 35",
     "web": "restaurangbar.se",
     "id": 20,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Lex Advokatbyrå",
@@ -218,7 +225,8 @@
     "phone": "08-545 689 50",
     "web": "lexadvokatbyra.se",
     "id": 21,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-29"
   },
   {
     "company": "Svenska Hudkliniker",
