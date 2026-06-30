@@ -236,7 +236,8 @@
     "phone": "010-20 40 998",
     "web": "svenskahudkliniker.se",
     "id": 22,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Joylife",
@@ -246,7 +247,8 @@
     "phone": "070-6000 600",
     "web": "joylife.se",
     "id": 23,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Restaurang Pelikan",
@@ -256,7 +258,8 @@
     "phone": "08-556 090 90",
     "web": "pelikan.se",
     "id": 24,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "AcneSpecialisten",
@@ -266,7 +269,8 @@
     "phone": "08-29 61 01",
     "web": "acnespecialisten.se",
     "id": 25,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Naprapathögskolans klinik",
@@ -276,7 +280,8 @@
     "phone": "08-31 19 19",
     "web": "naprapathogskolan.se",
     "id": 26,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "IGNITE Training Hub",
@@ -286,7 +291,8 @@
     "phone": "070-393 47 11",
     "web": "ignitetraininghub.se",
     "id": 27,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Tegelbacken",
@@ -296,7 +302,8 @@
     "phone": "+46 8 25 16 55",
     "web": "tegelbacken.com",
     "id": 28,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Kouzina",
@@ -306,7 +313,8 @@
     "phone": "+4686644228",
     "web": "kouzina.se",
     "id": 29,
-    "status": "Att kontakta"
+    "status": "Kontaktad",
+    "contacted": "2026-06-30"
   },
   {
     "company": "Stadshuskällaren",
