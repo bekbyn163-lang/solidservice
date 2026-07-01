@@ -515,5 +515,105 @@
     "web": "cafecorniche.se",
     "id": 49,
     "status": "Att kontakta"
+  },
+  {
+    "company": "Ulla Winbladh",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@ullawinbladh.se",
+    "phone": "",
+    "web": "ullawinbladh.se",
+    "id": 50,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Gnarly",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "fridhemsplan@gnarlyburger.se",
+    "phone": "+46851942300",
+    "web": "gnarlyburger.se",
+    "id": 51,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Gandhi",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@restauranggandhi.se",
+    "phone": "+4686533080",
+    "web": "restauranggandhi.se",
+    "id": 52,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Primo Ciao Ciao",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@primohantverkargatan.nu",
+    "phone": "+4686539023",
+    "web": "primohantverkargatan.nu",
+    "id": 53,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Thelins",
+    "type": "Kafé",
+    "area": "Stockholm",
+    "email": "info@thelinskonditori.se",
+    "phone": "+4686511900",
+    "web": "thelinskonditori.se",
+    "id": 54,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "El Cielo",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "info@elcielo.se",
+    "phone": "+4686515300",
+    "web": "elcielo.se",
+    "id": 55,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Kungsholmens Vinbar",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "admin@kungsholmensvinbar.se",
+    "phone": "+46705315286",
+    "web": "kungsholmensvinbar.se",
+    "id": 56,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Caliente",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "fleminggatan@caliente.se",
+    "phone": "+4686522686",
+    "web": "caliente.se",
+    "id": 57,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Mälarpaviljongen",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "mail@carolabjork.se",
+    "phone": "",
+    "web": "malarpaviljongen.se",
+    "id": 58,
+    "status": "Att kontakta"
+  },
+  {
+    "company": "Solstugan",
+    "type": "Restaurang",
+    "area": "Stockholm",
+    "email": "solstugan1922@gmail.com",
+    "phone": "+46 86 562 080",
+    "web": "solstugan.com",
+    "id": 59,
+    "status": "Att kontakta"
   }
 ]
