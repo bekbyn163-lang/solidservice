@@ -2,8 +2,10 @@ name: B2B-utskick (kontorsstadning)
 
 # Kor automatiskt vardagar 08:00 UTC (~09-10 svensk tid) + en manuell "Run"-knapp.
 on:
-  schedule:
-    - cron: "0 8 * * 1-5"
+  # PAUSAD 2026-06-27: automatiska utskick AVSTÄNGDA (på användarens begäran).
+  # Avkommentera raderna nedan för att återuppta schemalagt utskick.
+  # schedule:
+  #   - cron: "0 8 * * 1-5"
   workflow_dispatch: {}
 
 permissions:
